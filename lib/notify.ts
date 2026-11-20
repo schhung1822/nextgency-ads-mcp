@@ -1,7 +1,7 @@
 import "server-only";
 import { sendLarkCard, type LarkField } from "@/lib/lark";
 import type { InviteResult } from "@/lib/github";
-import type { Order } from "@/lib/store";
+import type { Order } from "@/lib/orders";
 import { formatVnd } from "@/lib/site";
 
 const vnTime = (iso: string) =>
@@ -40,20 +40,30 @@ function inviteField(invite?: InviteResult): LarkField {
 }
 
 /** Đã nhận đủ tiền. Trả về lỗi nếu gửi Lark thất bại để webhook báo SePay gọi lại. */
-export async function notifyPaid(order: Order, tx: PaidTx, extra?: string) {
+export async function notifyPaid(order: Order, tx?: PaidTx, extra?: string) {
   const needManual = order.invite?.status === "error" || order.invite?.status === "skipped" || !order.invite;
   return sendLarkCard({
     title: needManual ? "✅ Thanh toán thành công — CẦN MỜI GITHUB TAY" : "✅ Thanh toán thành công — Ads MCP Simple",
     tone: needManual ? "orange" : "green",
     fields: [
       { label: "Mã đơn", value: order.code },
-      { label: "Đã nhận", value: formatVnd(order.paidAmount ?? tx.amount) },
+      { label: "Đã nhận", value: formatVnd(order.paidAmount || order.amount) },
       ...customerFields(order),
       inviteField(order.invite),
-      { label: "Ngân hàng", value: tx.gateway ?? "—" },
-      { label: "Mã giao dịch", value: String(tx.reference || tx.id) },
-      { label: "Thời gian GD", value: tx.time ?? vnTime(new Date().toISOString()) },
-      { label: "Nội dung CK", value: tx.content ?? "—", short: false },
+      ...(order.paidVia === "manual" || !tx
+        ? [
+            { label: "Hình thức", value: "🛠️ Admin xác nhận thủ công" },
+            ...(order.adminNote ? [{ label: "Ghi chú admin", value: order.adminNote }] : []),
+          ]
+        : []),
+      ...(tx
+        ? [
+            { label: "Ngân hàng", value: tx.gateway ?? "—" },
+            { label: "Mã giao dịch", value: String(tx.reference || tx.id) },
+            { label: "Thời gian GD", value: tx.time ?? vnTime(new Date().toISOString()) },
+            { label: "Nội dung CK", value: tx.content ?? "—", short: false },
+          ]
+        : []),
     ],
     footer:
       extra ??
@@ -70,8 +80,8 @@ export async function notifyUnderpaid(order: Order, tx: PaidTx) {
     fields: [
       { label: "Mã đơn", value: order.code },
       { label: "Cần thanh toán", value: formatVnd(order.amount) },
-      { label: "Đã nhận (cộng dồn)", value: formatVnd(order.paidAmount ?? tx.amount) },
-      { label: "Còn thiếu", value: formatVnd(Math.max(order.amount - (order.paidAmount ?? tx.amount), 0)) },
+      { label: "Đã nhận (cộng dồn)", value: formatVnd(order.paidAmount) },
+      { label: "Còn thiếu", value: formatVnd(Math.max(order.amount - order.paidAmount, 0)) },
       ...customerFields(order),
       { label: "Nội dung CK", value: tx.content ?? "—", short: false },
     ],
@@ -95,8 +105,8 @@ export async function notifyDuplicate(order: Order, tx: PaidTx) {
   });
 }
 
-/** Có mã đơn trong nội dung CK nhưng không tra được đơn (chưa cấu hình Redis / đơn hết hạn). */
-export async function notifyUnmatched(codes: string[], tx: PaidTx) {
+/** Có tiền vào nhưng không gắn được vào đơn nào (sai mã) hoặc đơn đã bị hủy. */
+export async function notifyUnmatched(codes: string[], tx: PaidTx, reason?: string) {
   return sendLarkCard({
     title: "💰 Nhận chuyển khoản — chưa tra được đơn",
     tone: "blue",
@@ -107,6 +117,6 @@ export async function notifyUnmatched(codes: string[], tx: PaidTx) {
       { label: "Mã giao dịch", value: String(tx.reference || tx.id) },
       { label: "Nội dung CK", value: tx.content ?? "—", short: false },
     ],
-    footer: "Không tìm thấy đơn tương ứng (có thể đơn đã hết hạn 7 ngày hoặc mã bị sửa) — cần đối soát thủ công.",
+    footer: reason ?? "Không tìm thấy đơn tương ứng (mã đơn bị sửa/sai) — cần đối soát thủ công.",
   });
 }

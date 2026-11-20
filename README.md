@@ -5,7 +5,7 @@ Next.js 16 (App Router) + shadcn/ui (base-nova) + Tailwind 4. Thanh toán chuy�
 ## Luồng
 
 1. Khách bấm **Mua ngay** → điền họ tên, SĐT, email, tài khoản GitHub → `POST /api/orders`.
-2. Server tạo mã đơn (`NGX` + 8 số), lưu đơn (Upstash Redis) và trả về mã QR SePay (số tiền + nội dung đã điền sẵn).
+2. Server tạo mã đơn (`NGX` + 8 số), lưu đơn vào **MySQL** và trả về mã QR SePay (số tiền + nội dung đã điền sẵn).
 3. Khách chuyển khoản → SePay gọi `POST /api/sepay/webhook` → server đối chiếu mã đơn + số tiền.
 4. Đủ tiền → server **tự mời tài khoản GitHub của khách vào repo (quyền Read)**, đơn chuyển `paid`, gửi thẻ **Lark** (có trạng thái mời; lỗi thì thẻ đổi màu cam "CẦN MỜI GITHUB TAY"). Trang của khách tự chuyển sang màn hình onboarding: 3 việc cần chuẩn bị (Accept lời mời, VPS + tên miền, tạo token) rồi mới mở nút đặt lịch setup.
 5. Thiếu tiền → Lark cảnh báo, khách chuyển bù với cùng nội dung; dư/trùng → Lark cảnh báo để xử lý tay.
@@ -22,7 +22,8 @@ Sao chép `.env.example` → `.env.local` (local) hoặc nhập vào Vercel → 
 | `SEPAY_WEBHOOK_API_KEY` | Khoá tự đặt, dán cùng giá trị bên SePay |
 | `SEPAY_CODE_PREFIX` | Tiền tố mã đơn, mặc định `NGX` |
 | `LARK_WEBHOOK_URL` / `LARK_WEBHOOK_SECRET` | Custom Bot của nhóm Lark (secret nếu bật ký) |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis (Vercel Marketplace tự thêm) |
+| `DATABASE_URL`, `DATABASE_SSL` | MySQL lưu đơn hàng (xem mục **MySQL** bên dưới) |
+| `ADMIN_TOKEN`, `CRON_SECRET` | Khoá cho API admin (đổi trạng thái đơn tay) và cron nhặt đơn |
 | `GITHUB_REPO`, `GITHUB_TOKEN` | Tự mời khách vào repo `org/repo` (token fine-grained, quyền Administration: Read and write). Trống = mời tay |
 | `NEXT_PUBLIC_BOOKING_URL` | Link đặt lịch setup (Cal.com / Lark Calendar…). Trống = ẩn nút |
 | `NEXT_PUBLIC_*` | URL site, Zalo/hotline/email hiển thị |
@@ -32,8 +33,58 @@ Sao chép `.env.example` → `.env.local` (local) hoặc nhập vào Vercel → 
 - (Khuyến nghị) Cấu hình công ty → Cấu trúc mã thanh toán: tiền tố trùng `SEPAY_CODE_PREFIX`.
 - Webhook trả `{"success": true}` (HTTP 200); lỗi tạm thời trả 5xx để SePay gọi lại. Mỗi giao dịch chỉ xử lý một lần.
 
-### Redis là bắt buộc ở production
-Thông tin khách (họ tên, SĐT, GitHub…) lưu ở Redis và chỉ gửi về Lark **khi đã thanh toán**. Nếu thiếu `KV_REST_API_*` ở production, `POST /api/orders` trả 503 (từ chối tạo đơn) để không nhận tiền mà mất thông tin khách. Ở `npm run dev` thì dùng bộ nhớ tạm.
+## MySQL (lưu đơn hàng)
+
+Thiếu `DATABASE_URL` thì `POST /api/orders` trả 503 (từ chối tạo đơn) để không nhận tiền mà mất thông tin khách.
+
+### Cài MySQL trên VPS (Ubuntu)
+```bash
+sudo apt update && sudo apt install -y mysql-server
+sudo mysql -e "CREATE DATABASE nextgency CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# Tạo user RIÊNG chỉ có quyền trên DB này, bắt buộc kết nối TLS
+sudo mysql -e "CREATE USER 'nextgency_app'@'%' IDENTIFIED BY 'MAT_KHAU_DAI_NGAU_NHIEN' REQUIRE SSL;
+               GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,ALTER,INDEX ON nextgency.* TO 'nextgency_app'@'%'; FLUSH PRIVILEGES;"
+```
+Vercel không có IP cố định, nên VPS phải cho phép kết nối từ Internet tới cổng 3306. Hãy làm đủ các điều sau:
+- `bind-address = 0.0.0.0` trong cấu hình MySQL, mở cổng 3306 ở firewall (`ufw allow 3306/tcp`).
+- **Bắt buộc TLS** (`REQUIRE SSL` như trên; MySQL 8 tự tạo chứng chỉ, dùng `DATABASE_SSL=true` + `DATABASE_SSL_REJECT_UNAUTHORIZED=false` nếu chứng chỉ tự ký).
+- Mật khẩu dài ngẫu nhiên, user chỉ có quyền trên đúng DB `nextgency`, cân nhắc đổi cổng khác 3306 và cài `fail2ban`.
+- Nếu dùng Vercel Pro + Static IPs thì chỉ cho phép đúng các IP đó trong firewall.
+
+### Tạo bảng
+Điền `DATABASE_URL` vào `.env` rồi chạy: `npm run db:migrate` (đọc [db/schema.sql](db/schema.sql); an toàn khi chạy lại). Hoặc dán file đó vào phpMyAdmin/Adminer.
+
+Ba bảng: `orders` (đơn + trạng thái), `sepay_transactions` (sổ giao dịch ngân hàng, mỗi giao dịch xử lý đúng một lần), `rate_limits`.
+
+### Trạng thái đơn (`orders.status`)
+| Giá trị | Ý nghĩa |
+|---|---|
+| `pending` | Chờ thanh toán |
+| `underpaid` | Khách chuyển thiếu (số tiền cộng dồn trong `paid_amount`) |
+| `paid` | Thanh toán thành công (`paid_via` = `sepay` tự động / `manual` admin xác nhận) |
+| `cancelled` | Đã hủy (tiền vào đơn này sẽ báo Lark để đối soát tay) |
+
+### Xác nhận thanh toán thủ công
+Đổi đơn sang `paid` bằng **một trong ba cách** — hệ thống sẽ chạy đủ các bước còn lại như thanh toán thật
+(mời GitHub → thẻ Lark → webhook `order.paid`):
+
+1. **Sửa trực tiếp trong DB** (phpMyAdmin/Adminer/TablePlus): `UPDATE orders SET status='paid' WHERE code='NGX12345678';`
+   Hệ thống nhặt đơn trong vòng ~1 phút (cron) hoặc ngay khi khách mở lại trang thanh toán.
+2. **API admin** (chạy ngay, có ghi chú):
+   ```bash
+   curl -X POST https://<domain>/api/admin/orders/NGX12345678/status \
+     -H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json" \
+     -d '{"status":"paid","note":"Đã đối soát sao kê"}'
+   ```
+3. Xem danh sách: `GET /api/admin/orders?status=pending&q=email-hoac-sdt` (cùng header).
+
+Các bước hậu thanh toán an toàn khi chạy lại: mỗi bước có cột đánh dấu (`invite_status`, `lark_notified_at`, `hook_paid_*`, `fulfill_state`) nên không mời/gửi trùng.
+`paid_at`, `paid_amount`, `paid_via` được tự điền nếu bạn chỉ đổi mỗi cột `status`.
+
+### Cron nhặt đơn
+Gọi `GET /api/cron/fulfill` mỗi phút (cần header `Authorization: Bearer <ADMIN_TOKEN hoặc CRON_SECRET>`). Chọn một:
+- **Crontab trên VPS** (miễn phí, khuyến nghị): `* * * * * curl -s -H "Authorization: Bearer ADMIN_TOKEN" https://<domain>/api/cron/fulfill >/dev/null`
+- **Vercel Cron** (gói Pro): tạo `vercel.json` `{ "crons": [{ "path": "/api/cron/fulfill", "schedule": "* * * * *" }] }` và đặt `CRON_SECRET`.
 
 ## Webhook gửi đi (gửi email cho khách)
 Đặt URL trong `.env` để hệ thống bắn dữ liệu sang n8n/Make/Zapier/server riêng của bạn:
@@ -71,7 +122,8 @@ const ok = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHe
 ## Chạy local
 ```bash
 npm install
-npm run dev     # http://localhost:3000 — dev dùng bộ nhớ tạm nếu chưa có Redis
+npm run db:migrate   # lần đầu: tạo bảng MySQL (cần DATABASE_URL trong .env)
+npm run dev          # http://localhost:3000
 ```
 Thử webhook:
 ```bash

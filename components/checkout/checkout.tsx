@@ -120,7 +120,7 @@ function CheckoutDialog({
 
   // Theo dõi trạng thái thanh toán.
   useEffect(() => {
-    if (!open || !pending || !pending.tracking || status === "paid") return;
+    if (!open || !pending || !pending.tracking || (status === "paid" && invite !== null)) return;
     const startedAt = Date.now();
     let stopped = false;
     const tick = async () => {
@@ -145,7 +145,7 @@ function CheckoutDialog({
       stopped = true;
       clearInterval(id);
     };
-  }, [open, pending, status]);
+  }, [open, pending, status, invite]);
 
   const reset = () => {
     writeSaved(null);
@@ -443,13 +443,16 @@ function PaidView({
   onClose: () => void;
 }) {
   const [done, setDone] = useState<Record<string, boolean>>({});
-  const manual = invite === "error" || invite === "skipped" || invite === null;
+  const inviting = invite === null; // đang chạy các bước hậu thanh toán (vài giây)
+  const manual = invite === "error" || invite === "skipped";
 
   const steps = [
     {
       id: "github",
       title: manual ? "Chờ Nextgency mời tài khoản GitHub của bạn" : "Chấp nhận lời mời vào repo trên GitHub",
-      body: manual
+      body: inviting
+        ? `Đang gửi lời mời tới ${github ? "@" + github : "tài khoản GitHub của bạn"}… vài giây nữa bạn sẽ thấy xác nhận.`
+        : manual
         ? `Chúng tôi sẽ mời ${github ? "@" + github : "tài khoản GitHub của bạn"} vào repo trong giờ làm việc. Bạn sẽ nhận email từ GitHub — bấm Accept khi nhận được.`
         : invite === "already"
           ? "Tài khoản của bạn đã có quyền truy cập repo — không cần làm gì thêm."

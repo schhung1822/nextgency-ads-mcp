@@ -1,7 +1,7 @@
 import { after, NextResponse } from "next/server";
+import { createOrder, getOrder, isPersistent, rateLimit, type Order } from "@/lib/orders";
 import { orderInputSchema } from "@/lib/order-schema";
 import { buildPaymentInfo, generateOrderCode, isSepayConfigured } from "@/lib/sepay";
-import { createOrderIfFree, isPersistent, rateLimit, type Order } from "@/lib/store";
 import { SITE } from "@/lib/site";
 import { deliverOrderEvent } from "@/lib/webhooks";
 
@@ -15,10 +15,9 @@ export async function POST(request: Request) {
     );
   }
 
-  // Thông tin khách chỉ được gửi về Lark khi đã thanh toán, nên bắt buộc phải lưu đơn được.
-  // Không có Redis ở production thì từ chối tạo đơn thay vì nhận tiền mà mất thông tin khách.
-  if (!isPersistent && process.env.NODE_ENV === "production") {
-    console.error("[orders] Thiếu KV_REST_API_URL / KV_REST_API_TOKEN — chưa cấu hình Upstash Redis.");
+  // Đơn hàng lưu trên MySQL. Chưa có DB thì từ chối tạo đơn thay vì nhận tiền mà mất thông tin khách.
+  if (!isPersistent) {
+    console.error("[orders] Thiếu DATABASE_URL — chưa cấu hình MySQL.");
     return NextResponse.json(
       { error: "Hệ thống đặt hàng đang được bảo trì. Vui lòng liên hệ Nextgency để được hỗ trợ." },
       { status: 503, headers: noStore },
@@ -59,30 +58,31 @@ export async function POST(request: Request) {
 
   // Giá luôn lấy từ server.
   const amount = SITE.price;
-  let order: Order | null = null;
-  for (let i = 0; i < 5 && !order; i++) {
-    const candidate: Order = {
-      ...data,
-      code: generateOrderCode(),
-      amount,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      consentAt: new Date().toISOString(),
-    };
-    if (await createOrderIfFree(candidate)) order = candidate;
+  let code: string | null = null;
+  try {
+    for (let i = 0; i < 5 && !code; i++) {
+      const candidate = generateOrderCode();
+      if (await createOrder({ ...data, code: candidate, amount })) code = candidate;
+    }
+  } catch (e) {
+    console.error("[orders] lỗi DB khi tạo đơn", e);
+    return NextResponse.json({ error: "Không tạo được đơn hàng, vui lòng thử lại." }, { status: 500, headers: noStore });
   }
-  if (!order) {
+  if (!code) {
     return NextResponse.json({ error: "Không tạo được đơn hàng, vui lòng thử lại." }, { status: 500, headers: noStore });
   }
 
-  const created = order;
-  after(() => deliverOrderEvent("created", created));
+  const finalCode = code;
+  after(async () => {
+    const created: Order | null = await getOrder(finalCode).catch(() => null);
+    if (created) await deliverOrderEvent("created", created);
+  });
 
   return NextResponse.json(
     {
-      code: order.code,
-      amount: order.amount,
-      payment: buildPaymentInfo(order.code, order.amount),
+      code,
+      amount,
+      payment: buildPaymentInfo(code, amount),
       tracking: true,
     },
     { headers: noStore },

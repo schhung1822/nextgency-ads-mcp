@@ -2,7 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { sendLarkCard } from "@/lib/lark";
 import type { PaidTx } from "@/lib/notify";
-import { getOrder, saveOrder, type Order } from "@/lib/store";
+import { recordPaidHook, type Order } from "@/lib/orders";
 import { SITE, formatVnd } from "@/lib/site";
 
 /**
@@ -42,7 +42,8 @@ export function buildPayload(kind: Kind, order: Order, tx?: PaidTx) {
       amount: order.amount,
       status: order.status,
       createdAt: order.createdAt,
-      ...(kind === "paid" ? { paidAt: order.paidAt ?? null, paidAmount: order.paidAmount ?? null } : {}),
+      paidVia: order.paidVia ?? null, // sepay | manual
+      ...(kind === "paid" ? { paidAt: order.paidAt ?? null, paidAmount: order.paidAmount || order.amount } : {}),
     },
     customer: {
       name: order.name,
@@ -68,10 +69,8 @@ export function buildPayload(kind: Kind, order: Order, tx?: PaidTx) {
   };
 }
 
-async function recordPaid(code: string, state: NonNullable<Order["hooks"]>["paid"]) {
-  const current = await getOrder(code);
-  if (!current) return;
-  await saveOrder({ ...current, hooks: { ...current.hooks, paid: state } });
+async function recordPaid(code: string, state: { ok: boolean; at: string; attempts: number; error?: string }) {
+  await recordPaidHook(code, state);
 }
 
 /** Gửi một sự kiện. Không bao giờ throw. Chỉ nên gọi trong `after()` để không chặn phản hồi. */

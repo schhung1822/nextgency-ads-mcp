@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { githubConfigured, lookupGithubUser } from "@/lib/github";
-import { rateLimit } from "@/lib/store";
+import { rateLimit } from "@/lib/orders";
 
 const noStore = { "Cache-Control": "no-store" };
 

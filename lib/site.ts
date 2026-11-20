@@ -30,7 +30,7 @@ export const LEGAL = {
   // Thời hạn hỗ trợ kể từ ngày thanh toán được xác nhận, và thời gian phản hồi ban đầu.
   supportMonths: 3,
   firstResponse: "03 ngày làm việc",
-  // Đơn chưa thanh toán được giữ tối đa bao lâu (khớp PENDING_TTL trong lib/store.ts).
+  // Đơn chưa thanh toán được giữ tối đa bao lâu (chỉ để hiển thị trong trang chính sách; đơn chưa thanh toán vẫn nằm trong DB cho tới khi bạn xóa/hủy).
   orderValidDays: 7,
 } as const;
 
