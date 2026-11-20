@@ -1,26 +1,147 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-hubot), ui-sans-serif, system-ui, sans-serif;
+  --font-archivo: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-sans);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  /* Nextgency brand */
+  --color-ink: #060614;
+  --color-navy: #0a1326;
+  --color-indigo: #17135c;
+  --color-royal: #1b4f9c;
+  --color-azure: #2e7bdf;
+  --color-sky: #9ed6ff;
+  --color-iris: #5e5cf0;
+  --color-violet: #9a63ff;
+  --color-lilac: #c08dfe;
+  --color-mist: #f4f8ff;
+  --color-haze: #f6f3ff;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --background: #ffffff;
+  --foreground: #0a1326;
+  --card: #ffffff;
+  --card-foreground: #0a1326;
+  --popover: #ffffff;
+  --popover-foreground: #0a1326;
+  --primary: #4b45e0;
+  --primary-foreground: #ffffff;
+  --secondary: #f1eeff;
+  --secondary-foreground: #2b144d;
+  --muted: #f3f6fd;
+  --muted-foreground: #566079;
+  --accent: #f1eeff;
+  --accent-foreground: #2b144d;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #dfe5f5;
+  --input: #cfd7ee;
+  --ring: #8866ee;
+  --chart-1: #9ed6ff;
+  --chart-2: #2e7bdf;
+  --chart-3: #5e5cf0;
+  --chart-4: #9a63ff;
+  --chart-5: #17135c;
+  --radius: 0.75rem;
+  --sidebar: #f4f8ff;
+  --sidebar-foreground: #0a1326;
+  --sidebar-primary: #4b45e0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1eeff;
+  --sidebar-accent-foreground: #2b144d;
+  --sidebar-border: #dfe5f5;
+  --sidebar-ring: #8866ee;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans scroll-smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Gradient thương hiệu — lấy từ nextgency.vn */
+@utility bg-brand-hero {
+  background:
+    radial-gradient(circle at 72% 8%, rgba(192, 141, 254, 0.32), transparent 38%),
+    radial-gradient(circle at 18% 78%, rgba(46, 123, 223, 0.3), transparent 36%),
+    linear-gradient(135deg, #060614, #17135c 38%, #263d8f 62%, #5e5cf0 88%);
+}
+@utility bg-brand-soft {
+  background: linear-gradient(180deg, #f4f8ff, #fff 38%, #f6f3ff);
+}
+@utility bg-brand-button {
+  background: linear-gradient(90deg, #24388e, #6d65ff 44%, #a571ff 78%, #9ed6ff);
+}
+@utility text-brand-gradient {
+  background: linear-gradient(90deg, #9ed6ff, #c08dfe 60%, #9a63ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility text-brand-gradient-dark {
+  background: linear-gradient(90deg, #1b4f9c, #5e5cf0 55%, #9a63ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility grid-fade {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at center, black, transparent 75%);
 }
