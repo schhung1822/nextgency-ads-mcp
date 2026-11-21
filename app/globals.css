@@ -113,6 +113,19 @@
   }
 }
 
+/* Thanh số liệu "chạy ra" trong khung chat minh hoạ ở hero (chiều rộng đích lấy từ style inline) */
+@keyframes bar-grow {
+  from {
+    width: 0;
+  }
+}
+@utility bar-grow {
+  animation: bar-grow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 /* Gradient thương hiệu — lấy từ nextgency.vn */
 @utility bg-brand-hero {
   background:

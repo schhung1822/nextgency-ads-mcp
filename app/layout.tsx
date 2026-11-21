@@ -20,7 +20,7 @@ const archivo = Archivo({
 const mono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 const title = `${SITE.productName}: ${SITE.tagline} | Nextgency`;
-const description = `Ads MCP Simple kết nối AI với Meta Ads, TikTok Ads, Google Ads, OpenAI Ads và dữ liệu thị trường Apify. Tự host, phân quyền cho đội ngũ, có Nextgency hỗ trợ setup. Trọn bộ ${formatVnd(SITE.price)}.`;
+const description = `Hỏi AI bằng tiếng Việt: video nào ra khách, tiền quảng cáo đang phí ở đâu, đối thủ đang làm gì. Ads MCP Simple kết nối AI với quảng cáo Facebook, TikTok, Google; có Nextgency hỗ trợ cài đặt. Trọn bộ ${formatVnd(SITE.price)}.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),

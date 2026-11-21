@@ -4,16 +4,20 @@ import { SiteHeader } from "@/components/landing/header";
 import {
   Apify,
   Audience,
+  Explainer,
   Faq,
   Features,
   FinalCta,
   Footer,
   Hero,
   Includes,
+  Personas,
   Pricing,
   Setup,
   SkillSection,
   Stats,
+  Team,
+  UseCases,
   faqJsonLd,
 } from "@/components/landing/sections";
 import { SITE } from "@/lib/site";
@@ -40,12 +44,16 @@ export default function Home() {
       <main>
         <Hero />
         <Stats />
-        <Audience />
+        <Team />
+        <Personas />
+        <Explainer />
+        <UseCases />
         <Features />
         <Apify />
         <SkillSection />
         <Setup />
         <Guide />
+        <Audience />
         <Includes />
         <Pricing />
         <Faq />

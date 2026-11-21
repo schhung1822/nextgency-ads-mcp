@@ -1,25 +1,39 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRightIcon,
   BarChart3Icon,
   BellRingIcon,
-  BotIcon,
   CheckIcon,
+  ClapperboardIcon,
+  HandshakeIcon,
   HeadsetIcon,
   KeyRoundIcon,
   LayersIcon,
-  LifeBuoyIcon,
   LockKeyholeIcon,
+  MegaphoneIcon,
+  MessageSquareTextIcon,
   RocketIcon,
+  ScanSearchIcon,
+  SendIcon,
   ServerIcon,
   ShieldCheckIcon,
+  ShoppingBagIcon,
   SlidersHorizontalIcon,
   SparklesIcon,
+  StoreIcon,
   TerminalIcon,
+  UserRoundIcon,
+  UsersRoundIcon,
+  UtensilsIcon,
+  WalletIcon,
   XIcon,
+  BotIcon,
+  MessageCircleQuestionIcon,
 } from "lucide-react";
 import { BuyStarButton } from "@/components/checkout/checkout";
-import { AnimatedHeading, HeroAurora, HeroTitle, PlatformMarquee, PlatformRotator, ShinyBadgeText, Stat } from "@/components/landing/fx";
+import { AnimatedHeading, HeroAurora, HeroTitle, PlatformMarquee, ShinyBadgeText, Stat } from "@/components/landing/fx";
+import { HeroChat } from "@/components/landing/hero-chat";
 import SpotlightCard from "@/components/react-bits/SpotlightCard";
 import { Reveal } from "@/components/landing/reveal";
 import { Vnd } from "@/components/landing/vnd";
@@ -28,8 +42,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Link from "next/link";
-import { POLICIES, SITE } from "@/lib/site";
+import { LEGAL, POLICIES, SITE, zaloHref } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ helpers */
@@ -92,89 +105,46 @@ export function Hero() {
     <section id="top" className="bg-brand-hero relative isolate overflow-hidden pt-28 pb-16 text-white sm:pt-36 sm:pb-24">
       <HeroAurora />
       <div className="grid-fade pointer-events-none absolute inset-0 -z-10" aria-hidden />
-      <Container className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
+      <Container className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
         <div>
           <Reveal>
             <Badge className="mb-6 h-7 gap-2 border border-white/20 bg-white/10 px-3 text-xs text-white backdrop-blur">
-              <SparklesIcon className="text-sky" /> <ShinyBadgeText>Dự án GitHub · MCP 2026 · Tự host</ShinyBadgeText>
+              <SparklesIcon className="text-sky" /> <ShinyBadgeText>MCP không còn là chuyện của dân công nghệ</ShinyBadgeText>
             </Badge>
             <HeroTitle />
-            <PlatformRotator />
             <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-white/75 sm:text-lg">
-              <strong className="font-semibold text-white">{SITE.productName}</strong> kết nối AI với Meta Ads, TikTok Ads, Google Ads, OpenAI Ads và dữ liệu thị trường qua Apify.
-              Hỏi báo cáo, thao tác quảng cáo, nghiên cứu sản phẩm và đối thủ bằng tiếng Việt — ngay trong Claude, ChatGPT hoặc Gemini.
+              <strong className="font-semibold text-white">MCP biến AI thành một đội chạy quảng cáo</strong> cho bạn trên Facebook, TikTok, Google.
+              Bạn hỏi bằng tiếng Việt — đội AI xem số liệu, chỉ ra video nào ra khách, chỗ nào đang phí tiền, rồi góp ý lại cho bạn và thao tác giúp khi bạn đồng ý.
+            </p>
+            <p className="mt-3 max-w-xl text-pretty text-sm leading-relaxed text-white/60 sm:text-base">
+              <b className="font-semibold text-white/85">{SITE.productName}</b> là bộ cài sẵn để bạn có đội AI này, kèm Nextgency hỗ trợ cài đặt — bạn không cần biết kỹ thuật.
             </p>
           </Reveal>
 
-          <Reveal delay={100}>
-            <ul className="mt-7 grid max-w-xl gap-3 text-sm text-white/85 sm:text-base">
-              <Tick dark>Một link MCP cho Meta, TikTok, Google, OpenAI Ads và Apify — số liệu quảng cáo cùng dữ liệu thị trường</Tick>
-              <Tick dark>Nghiên cứu sản phẩm, giá, đánh giá, quảng cáo đối thủ trên sàn TMĐT, mạng xã hội, Google và website</Tick>
-              <Tick dark>Tự host trên VPS của bạn, phân quyền đội ngũ, token mã hóa, trần chi phí tùy chỉnh</Tick>
-            </ul>
-          </Reveal>
-
-          <Reveal delay={200} className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <Reveal delay={150} className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
             <BuyStarButton className="text-base font-semibold">
               Mua ngay · <Vnd amount={SITE.price} />
               <ArrowRightIcon className="size-4" />
             </BuyStarButton>
-            <a href="#tinh-nang" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full border-white/25 bg-white/5 px-6 text-base text-white hover:bg-white/15 hover:text-white")}>
-              Xem tính năng
+            <a href="#mcp-la-gi" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full border-white/25 bg-white/5 px-6 text-base text-white hover:bg-white/15 hover:text-white")}>
+              Hiểu MCP trong 30 giây
             </a>
           </Reveal>
 
           <Reveal delay={300}>
             <p className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/60">
               <span className="inline-flex items-center gap-1.5"><CheckIcon className="size-4 text-sky" /> Thanh toán QR, xác nhận tự động</span>
-              <span className="inline-flex items-center gap-1.5"><CheckIcon className="size-4 text-sky" /> Kèm Nextgency hỗ trợ setup</span>
-              <span className="inline-flex items-center gap-1.5"><CheckIcon className="size-4 text-sky" /> Sở hữu trọn đời · cập nhật miễn phí</span>
+              <span className="inline-flex items-center gap-1.5"><CheckIcon className="size-4 text-sky" /> Kèm Nextgency hỗ trợ cài đặt</span>
+              <span className="inline-flex items-center gap-1.5"><CheckIcon className="size-4 text-sky" /> Trả một lần · cập nhật miễn phí</span>
             </p>
           </Reveal>
         </div>
 
         <Reveal delay={150}>
-          <ChatMock />
+          <HeroChat />
         </Reveal>
       </Container>
     </section>
-  );
-}
-
-function ChatMock() {
-  return (
-    <div className="relative mx-auto w-full max-w-md">
-      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-violet/30 blur-3xl" aria-hidden />
-      <div className="overflow-hidden rounded-2xl border border-white/15 bg-ink/70 shadow-2xl backdrop-blur-xl">
-        <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
-          <span className="size-2.5 rounded-full bg-white/20" />
-          <span className="size-2.5 rounded-full bg-white/20" />
-          <span className="size-2.5 rounded-full bg-white/20" />
-          <span className="ml-2 font-archivo text-xs text-white/50">Claude · Ads MCP Simple</span>
-          <span className="ml-auto text-[10px] tracking-wider text-white/40 uppercase">Minh hoạ</span>
-        </div>
-        <div className="grid gap-4 p-4 text-sm">
-          <div className="ml-auto max-w-[92%] rounded-2xl rounded-br-sm bg-iris/90 px-4 py-3 text-white">
-            Phân tích CPA các chiến dịch Meta tuần qua, xem đối thủ đang chạy thông điệp gì và đọc đánh giá sản phẩm cùng phân khúc. Đề xuất 3 hướng quảng cáo mới. <em>Chưa thay đổi quảng cáo.</em>
-          </div>
-          <div className="grid gap-2">
-            {[
-              ["Meta Ads", "Đọc số liệu chiến dịch, nhóm quảng cáo"],
-              ["Apify", "Quảng cáo đối thủ — Thư viện quảng cáo Facebook"],
-              ["Apify", "Đánh giá sản phẩm cùng phân khúc trên sàn"],
-            ].map(([src, text]) => (
-              <div key={text} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/75">
-                <span className="grid size-5 place-items-center rounded-md bg-sky/20 text-sky"><CheckIcon className="size-3" strokeWidth={3} /></span>
-                <span><b className="font-semibold text-white">{src}</b> · {text}</span>
-              </div>
-            ))}
-          </div>
-          <div className="rounded-2xl rounded-bl-sm border border-white/10 bg-white/5 px-4 py-3 text-white/85">
-            Đã tổng hợp xong. Dưới đây là <b className="text-white">3 hướng quảng cáo mới</b>, mỗi hướng kèm căn cứ từ số liệu của bạn và tín hiệu thị trường. Mình chưa thay đổi gì trên tài khoản quảng cáo.
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -185,10 +155,10 @@ export function Stats() {
     <section aria-label="Con số nổi bật" className="relative z-10 border-b bg-white">
       <Container className="grid grid-cols-2 gap-px lg:grid-cols-4">
         {[
-          { stat: <Stat to={4} />, title: "Nền tảng quảng cáo", sub: "Meta, TikTok, Google, OpenAI" },
-          { stat: <Stat to={5} suffix="+" />, title: "Client AI", sub: "Claude, ChatGPT, Gemini + CLI" },
-          { stat: <Stat to={1} />, title: "Skill độc quyền", sub: "Phân tích Meta Ads thị trường VN" },
-          { stat: <Stat text="AES-256" />, title: "Mã hóa token", sub: "Nằm trên VPS của bạn" },
+          { stat: <Stat to={4} />, title: "Nền tảng quảng cáo", sub: "Facebook, TikTok, Google, OpenAI" },
+          { stat: <Stat to={5} suffix="+" />, title: "Ứng dụng AI dùng được", sub: "Claude, ChatGPT, Gemini…" },
+          { stat: <Stat to={1} />, title: "Nơi xem tất cả", sub: "Số liệu mọi tài khoản ở một chỗ" },
+          { stat: <Stat text="Của bạn" />, title: "Dữ liệu riêng tư", sub: "Nằm trên máy chủ do bạn sở hữu" },
         ].map((it, i) => (
           <Reveal key={it.title} delay={i * 80} className="px-2 py-8 text-center">
             {it.stat}
@@ -204,52 +174,246 @@ export function Stats() {
   );
 }
 
-/* ----------------------------------------------------------------- audience */
+/* --------------------------------------------------------------- đội AI làm gì */
 
-export function Audience() {
-  const fit = [
-    "Người chạy quảng cáo Meta, TikTok, Google Ads, OpenAI Ads quản lý nhiều tài khoản",
-    "Agency muốn cho nhân viên dùng AI thao tác quảng cáo mà không phải đưa token gốc",
-    "Chủ shop chốt đơn qua inbox, Zalo, điện thoại, muốn AI phân tích quảng cáo Meta",
-    "Đội marketing 2–20 người cần phân quyền, trần ngân sách và nhật ký minh bạch",
-    "Người muốn nhận thông báo và báo cáo quảng cáo định kỳ qua Telegram",
-    "Đội marketing và chủ shop cần nghiên cứu sản phẩm, đối thủ, giá, nội dung từ dữ liệu công khai qua Apify",
-    "Người muốn tự host trên VPS bằng script cài nhanh, có video hướng dẫn để làm theo",
+export function Team() {
+  const skills = [
+    { icon: MegaphoneIcon, title: "Chạy quảng cáo", body: "Tạo, bật, tắt quảng cáo theo quyền bạn cấp", tags: ["Facebook", "TikTok", "Google"] },
+    { icon: WalletIcon, title: "Giữ tiền", body: "Mỗi khách tốn bao nhiêu, chỗ nào đang phí", tags: [] },
+    { icon: MessageSquareTextIcon, title: "Đọc bình luận", body: "Khách hỏi gì, chê gì dưới bài công khai", tags: ["Fanpage"] },
+    { icon: ClapperboardIcon, title: "Góp ý video", body: "Video nào ra khách, quay dọc hay ngang", tags: ["Reels", "Bài viết"] },
+    { icon: ScanSearchIcon, title: "Soi đối thủ", body: "Họ quảng cáo gì, bán giá nào", tags: ["Shopee", "TikTok Shop", "Google Maps"] },
+    { icon: SendIcon, title: "Báo cáo về điện thoại", body: "Gửi qua Telegram theo yêu cầu hoặc lịch bạn cài", tags: ["Telegram"] },
   ];
-  const notFit = [
-    "Người cần lịch tự động chạy độc lập trong Ads MCP Simple mà không cấu hình ứng dụng AI hoặc công cụ tự động hóa",
-    "Người muốn đăng bài, sửa bài Fanpage: phần Fanpage chỉ đọc",
-    "Người chưa đủ khả năng đọc hiểu tài liệu để biết sản phẩm có phù hợp với mình hay không",
+  const videos = [
+    { name: "Chủ shop tự tư vấn", n: 42, top: true },
+    { name: "Vlog hậu trường", n: 27 },
+    { name: "Bài tin tức đối tác", n: 15 },
+    { name: "Giới thiệu cửa hàng", n: 3, stop: true },
   ];
   return (
-    <section className="bg-brand-soft py-20 sm:py-28">
+    <section id="doi-ai" className="scroll-mt-16 bg-brand-soft py-20 sm:py-28">
       <Container>
-        <SectionHead eyebrow="Dành cho ai" title="Sản phẩm này dành cho bạn nếu…" />
-        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <SectionHead
+          eyebrow="Đội AI làm gì cho bạn"
+          title="Có MCP là có một đội chạy quảng cáo" accent="làm việc cho bạn"
+          description="Bạn chỉ việc hỏi và quyết. Đội AI xem số liệu, theo dõi từng đồng, rồi quay lại góp ý cho bạn — như một phòng marketing thu nhỏ."
+        />
+
+        <Reveal>
+          <div className="rounded-3xl border bg-white p-4 shadow-sm sm:p-6">
+            <div className="mb-5 flex flex-wrap items-center justify-center gap-3 text-sm">
+              <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 font-semibold text-navy">
+                <UserRoundIcon className="size-4 text-iris" /> Bạn — chủ shop, spa, nhà hàng
+              </span>
+              <span className="text-xs text-muted-foreground">hỏi, giao việc ⇄ báo cáo, góp ý lại</span>
+              <span className="bg-brand-button inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold text-white">
+                <BotIcon className="size-4" /> Đội quảng cáo AI của bạn
+              </span>
+            </div>
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {skills.map((s) => (
+                <li key={s.title} className="rounded-2xl border bg-card p-4">
+                  <span className="mb-3 grid size-10 place-items-center rounded-xl bg-secondary text-iris"><s.icon className="size-5" /></span>
+                  <h3 className="font-semibold text-navy">{s.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+                  {s.tags.length > 0 && (
+                    <p className="mt-2.5 flex flex-wrap gap-1.5">
+                      {s.tags.map((t) => <span key={t} className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-medium text-iris">{t}</span>)}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+
+        <div className="mt-16 mb-8 text-center">
           <Reveal>
+            <h3 className="text-2xl font-bold tracking-tight text-navy sm:text-3xl">Mỗi tuần, bạn nhìn thấy những điều này</h3>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">Không cần biết thuật ngữ quảng cáo. Đội AI nói bằng ngôn ngữ của người bán hàng: khách, tiền, video.</p>
+          </Reveal>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-3">
+          <Reveal className="h-full">
             <Card className="h-full p-2 ring-iris/15">
-              <CardContent className="p-4 sm:p-6">
-                <ul className="grid gap-4 text-[15px] leading-relaxed text-navy/90">
-                  {fit.map((t) => <Tick key={t}>{t}</Tick>)}
-                </ul>
+              <CardHeader className="p-4 pb-2"><CardTitle className="text-lg text-navy">Video nào mang khách về</CardTitle></CardHeader>
+              <CardContent className="grid gap-3 p-4 pt-2">
+                {videos.map((v) => (
+                  <div key={v.name} className="grid gap-1">
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="flex flex-wrap items-center gap-2 font-medium text-navy">
+                        {v.name}
+                        {v.top && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Hiệu quả nhất</span>}
+                        {v.stop && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Nên dừng</span>}
+                      </span>
+                      <b className="shrink-0 text-navy">{v.n} khách</b>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                      <div className={cn("h-full rounded-full", v.stop ? "bg-amber-300" : "bg-brand-button")} style={{ width: `${Math.round((v.n / 42) * 100)}%` }} />
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs leading-relaxed text-muted-foreground">Số khách nhắn tin từ mỗi video. Đội gợi ý dừng video cuối, làm thêm video giống video đầu.</p>
               </CardContent>
             </Card>
           </Reveal>
-          <Reveal delay={120}>
-            <Card className="self-start border-0 bg-navy p-2 text-white ring-white/10">
-              <CardContent className="p-4 sm:p-6">
-                <h3 className="mb-4 text-lg font-semibold">Không dành cho</h3>
-                <ul className="grid gap-4 text-[15px] leading-relaxed text-white/80">
-                  {notFit.map((t) => (
-                    <li key={t} className="flex items-start gap-3">
-                      <span className="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-red-500/20 text-red-300"><XIcon className="size-3.5" strokeWidth={3} /></span>
-                      <span>{t}</span>
-                    </li>
-                  ))}
-                </ul>
+
+          <Reveal delay={90} className="h-full">
+            <Card className="h-full p-2 ring-iris/15">
+              <CardHeader className="p-4 pb-2"><CardTitle className="text-lg text-navy">Tiền quảng cáo đi đâu</CardTitle></CardHeader>
+              <CardContent className="grid gap-3 p-4 pt-2">
+                <p className="text-sm text-muted-foreground">Tuần này bỏ ra</p>
+                <p className="text-brand-gradient-dark -mt-2 text-4xl font-black tracking-tight">4,8 triệu</p>
+                <div>
+                  <div className="flex h-3.5 overflow-hidden rounded-full bg-secondary">
+                    <div className="bg-brand-button" style={{ width: "81%" }} />
+                    <div className="flex-1 bg-amber-300" />
+                  </div>
+                  <div className="mt-2 flex justify-between text-sm">
+                    <span><b className="text-navy">3,9 tr</b> <span className="text-muted-foreground">mang về 156 khách</span></span>
+                    <span><b className="text-navy">0,9 tr</b> <span className="text-muted-foreground">chưa ra khách</span></span>
+                  </div>
+                </div>
+                <p className="rounded-xl bg-secondary p-3 text-sm leading-relaxed text-secondary-foreground">Đội gợi ý: tắt 2 quảng cáo chưa ra khách, dồn tiền sang video đang thắng.</p>
               </CardContent>
             </Card>
           </Reveal>
+
+          <Reveal delay={180} className="h-full">
+            <Card className="h-full p-2 ring-iris/15">
+              <CardHeader className="p-4 pb-2"><CardTitle className="text-lg text-navy">Báo cáo ngay trên điện thoại</CardTitle></CardHeader>
+              <CardContent className="grid gap-3 p-4 pt-2">
+                <p className="text-sm text-muted-foreground">Qua Telegram, đọc trong một phút trước giờ mở cửa.</p>
+                <div className="grid gap-2 rounded-2xl bg-navy p-3 text-sm text-white">
+                  <p className="text-[11px] text-white/50">Đội quảng cáo AI · 7:30</p>
+                  <p className="rounded-xl rounded-tl-sm bg-white/10 px-3 py-2">Hôm qua: <b>18 khách</b> nhắn tin</p>
+                  <p className="rounded-xl rounded-tl-sm bg-white/10 px-3 py-2">Video “Chủ shop tự tư vấn” vẫn số 1</p>
+                  <p className="rounded-xl rounded-tl-sm bg-iris/80 px-3 py-2"><b>Gợi ý hôm nay:</b> quay thêm 1 video trước – sau</p>
+                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">Báo cáo gửi theo yêu cầu hoặc theo lịch bạn cài.</p>
+              </CardContent>
+            </Card>
+          </Reveal>
+        </div>
+        <p className="mt-4 text-center text-xs text-muted-foreground">Hình và số liệu minh họa.</p>
+      </Container>
+    </section>
+  );
+}
+
+/* ----------------------------------------------------------------- đối tượng */
+
+export function Personas() {
+  const items = [
+    { icon: UserRoundIcon, title: "Bạn tự chạy", body: "Có người chỉ cho bạn bài nào ra khách, bài nào nên tắt. Không cần học công cụ quảng cáo của Facebook hay TikTok." },
+    { icon: UsersRoundIcon, title: "Bạn có nhân viên chạy", body: "Nhân viên làm nhanh hơn. Bạn tự xem số mà không phải đợi ai báo, và biết ai đã bật, tắt cái gì." },
+    { icon: HandshakeIcon, title: "Bạn thuê agency", body: "Tự kiểm tra agency có làm hiệu quả không. Có số thật trong tay khi bàn chuyện tiền hay đổi đối tác." },
+  ];
+  return (
+    <section className="bg-white py-20 sm:py-28">
+      <Container>
+        <SectionHead eyebrow="Dành cho ai" title="Dù bạn đang chạy" accent="quảng cáo kiểu nào" />
+        <div className="grid gap-5 md:grid-cols-3">
+          {items.map((it, i) => (
+            <Reveal key={it.title} delay={i * 90} className="h-full">
+              <div className="h-full rounded-2xl border bg-card p-6">
+                <span className="bg-brand-button mb-4 grid size-12 place-items-center rounded-xl text-white shadow-md shadow-iris/30"><it.icon className="size-6" /></span>
+                <h3 className="text-lg font-semibold text-navy">{it.title}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{it.body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------ MCP là gì (30s) */
+
+export function Explainer() {
+  const rows = [
+    ["Xem báo cáo", "Tự xuất Excel từ Ads Manager rồi dán vào chat", "AI tự lấy số mới nhất, theo đúng câu bạn hỏi"],
+    ["Nhiều tài khoản", "Mở từng tab, cộng tay từng con số", "Một câu hỏi, AI đọc hết các tài khoản và Fanpage được cấp"],
+    ["Soi đối thủ", "Tự lướt Thư viện quảng cáo, Shopee, đọc từng đánh giá", "AI quét giá, đánh giá, quảng cáo đối thủ và tóm lại điểm khách chưa hài lòng"],
+    ["Bật, tắt, chỉnh", "Tự vào Ads Manager bấm", "AI đề xuất và làm theo quyền bạn cấp, bạn chỉ cần xác nhận"],
+  ];
+  return (
+    <section id="mcp-la-gi" className="scroll-mt-16 bg-brand-soft py-20 sm:py-28">
+      <Container className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
+        <Reveal>
+          <p className="mb-3 font-archivo text-xs font-semibold tracking-[0.2em] text-iris uppercase">Hiểu trong 30 giây</p>
+          <AnimatedHeading title="MCP là gì?" accent="Hiểu trong 30 giây." align="left" className="lg:text-4xl" />
+          <p className="mt-5 text-base leading-relaxed text-navy/90 sm:text-lg">
+            Không có MCP, AI chỉ biết những gì bạn dán vào khung chat. Có MCP, AI được cấp quyền đọc và thao tác trên <b>đúng những tài khoản bạn cho phép</b> — như giao chìa khóa một căn phòng, không phải cả căn nhà.
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            MCP (Model Context Protocol) là chuẩn kết nối mở mà Claude, ChatGPT, Gemini đều hỗ trợ. {SITE.productName} là một kết nối như thế, làm riêng cho quảng cáo và nghiên cứu thị trường.
+          </p>
+
+          <div className="mt-6 grid gap-3 text-sm">
+            <p className="rounded-xl border bg-white p-3.5"><b className="text-navy">AI bạn đang dùng:</b> <span className="text-muted-foreground">Claude, ChatGPT, Gemini, Claude Code, Gemini CLI</span></p>
+            <p className="rounded-xl border border-iris/30 bg-secondary/70 p-3.5"><b className="text-navy">Một kết nối duy nhất:</b> <span className="text-muted-foreground">chạy trên máy chủ của bạn, mật khẩu kết nối được mã hóa, phân quyền từng người</span></p>
+            <p className="rounded-xl border bg-white p-3.5"><b className="text-navy">Quảng cáo:</b> <span className="text-muted-foreground">Facebook, TikTok, Google, OpenAI Ads</span><br /><b className="text-navy">Thị trường:</b> <span className="text-muted-foreground">Shopee, TikTok Shop, Lazada, Thư viện quảng cáo Facebook, Google Maps, YouTube</span><br /><b className="text-navy">Thông báo:</b> <span className="text-muted-foreground">Telegram</span></p>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">Gemini web cá nhân chưa được hỗ trợ trong hướng dẫn hiện tại.</p>
+        </Reveal>
+
+        <Reveal delay={120}>
+          <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
+            <div className="grid grid-cols-[0.8fr_1fr_1.2fr] bg-navy text-xs font-semibold text-white sm:text-sm">
+              <span className="p-3 sm:p-4" />
+              <span className="p-3 text-white/70 sm:p-4">AI thông thường</span>
+              <span className="bg-brand-button p-3 sm:p-4">AI có {SITE.productName}</span>
+            </div>
+            {rows.map(([k, a, b]) => (
+              <div key={k} className="grid grid-cols-[0.8fr_1fr_1.2fr] border-t text-[13px] leading-relaxed sm:text-sm">
+                <span className="p-3 font-semibold text-navy sm:p-4">{k}</span>
+                <span className="p-3 text-muted-foreground sm:p-4">{a}</span>
+                <span className="bg-secondary/50 p-3 text-navy/90 sm:p-4">{b}</span>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </Container>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------- dùng thế nào */
+
+export function UseCases() {
+  const items = [
+    { icon: StoreIcon, who: "Chủ spa", q: "Bài nào tuần này ra khách đặt lịch nhiều nhất? Bài nào nên tắt?", a: "AI xếp hạng bài theo chi phí mỗi tin nhắn, chỉ ra bài đang đốt tiền và lý do." },
+    { icon: UtensilsIcon, who: "Chủ nhà hàng", q: "Mấy quán lẩu quanh quận 3 đang chạy quảng cáo gì, khách chê gì?", a: "AI quét Thư viện quảng cáo Facebook và Google Maps, tóm tắt ưu đãi của đối thủ và đánh giá xấu để bạn làm khác." },
+    { icon: ShoppingBagIcon, who: "Shop bán hàng online", q: "Đánh giá 1 sao của áo polo cùng giá trên Shopee nói gì?", a: "AI đọc hàng trăm đánh giá, gom thành nỗi đau của khách và gợi ý góc nội dung mới." },
+    { icon: UsersRoundIcon, who: "Agency, đội marketing", q: "Tài khoản khách nào có chi phí hiển thị tăng bất thường từ đầu tuần?", a: "AI kiểm tra nhiều tài khoản cùng lúc. Nhân viên được giao việc mà không cần cầm mật khẩu gốc." },
+  ];
+  return (
+    <section id="cach-dung" className="scroll-mt-16 bg-white py-20 sm:py-28">
+      <Container>
+        <SectionHead
+          eyebrow="Cách dùng"
+          title="Dùng thế nào?" accent="Hỏi như hỏi nhân viên."
+          description="Không cần biết code, không cần nhớ lệnh. Đây là những câu hỏi mẫu bạn có thể hỏi mỗi ngày."
+        />
+        <div className="grid gap-5 md:grid-cols-2">
+          {items.map((it, i) => (
+            <Reveal key={it.who} delay={(i % 2) * 90} className="h-full">
+              <div className="h-full rounded-2xl border bg-card p-5 sm:p-6">
+                <p className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-iris">
+                  <span className="grid size-9 place-items-center rounded-lg bg-secondary"><it.icon className="size-[18px]" /></span>
+                  {it.who}
+                </p>
+                <blockquote className="rounded-xl border-l-4 border-iris bg-secondary/60 p-3.5 text-[15px] leading-relaxed font-medium text-navy">“{it.q}”</blockquote>
+                <p className="mt-3 flex gap-2.5 text-[15px] leading-relaxed text-muted-foreground">
+                  <BotIcon className="mt-0.5 size-5 shrink-0 text-violet" /> {it.a}
+                </p>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </Container>
     </section>
@@ -260,20 +424,20 @@ export function Audience() {
 
 export function Features() {
   const items = [
-    { icon: LayersIcon, title: "Một link, nhiều nền tảng, nhiều tài khoản", body: "Kết nối và phân quyền các tài khoản quảng cáo, Fanpage; kết hợp số liệu doanh nghiệp với dữ liệu thị trường qua Apify. Hỏi số liệu và thao tác bằng tiếng Việt." },
-    { icon: BarChart3Icon, title: "Skill độc quyền phân tích Meta Ads VN", body: "Hỗ trợ chẩn đoán nguyên nhân chi phí tăng và đề xuất scale, dừng hoặc thử nghiệm — thiết kế cho tài khoản chốt đơn qua inbox, Zalo, điện thoại." },
-    { icon: BellRingIcon, title: "Thông báo qua Telegram", body: "Nhận tin khi quảng cáo có thay đổi và báo cáo do AI gửi theo yêu cầu hoặc theo lịch đã cấu hình." },
-    { icon: TerminalIcon, title: "Tự host đơn giản: copy & paste", body: "Dùng script cài nhanh để triển khai lên VPS của bạn, có video hướng dẫn mở sau khi kích hoạt sản phẩm." },
-    { icon: KeyRoundIcon, title: "Giao việc mà không lộ token", body: "Phân quyền Admin và Nhân viên, hỗ trợ xác thực 2 lớp, token mã hóa AES-256-GCM, ghi nhật ký từng lệnh AI." },
-    { icon: SlidersHorizontalIcon, title: "Tùy chỉnh bảo vệ theo nhu cầu", body: "Bật xác nhận 2 bước, trần ngân sách, giá thầu và giới hạn thao tác trong chế độ Tùy chỉnh nâng cao. Chế độ Cơ bản không áp dụng các mức trần này." },
+    { icon: LayersIcon, title: "Xem hết quảng cáo ở một chỗ", body: "Facebook, TikTok, Google, OpenAI Ads và dữ liệu thị trường trong cùng một kết nối. Nhiều tài khoản quảng cáo, nhiều Fanpage — hỏi và thao tác bằng tiếng Việt." },
+    { icon: BarChart3Icon, title: "Chuyên gia phân tích Facebook Ads kiểu Việt Nam", body: "Skill độc quyền giúp tìm nguyên nhân chi phí tăng và đề xuất tăng ngân sách, dừng hay thử cái mới — làm cho shop chốt đơn qua inbox, Zalo, điện thoại." },
+    { icon: BellRingIcon, title: "Báo cáo về điện thoại", body: "Nhận tin qua Telegram khi quảng cáo có thay đổi, và báo cáo do AI gửi theo yêu cầu hoặc theo lịch bạn cài." },
+    { icon: HeadsetIcon, title: "Cài đặt có người làm cùng", body: "Có sẵn script cài nhanh và video hướng dẫn (mở sau khi kích hoạt). Đội Nextgency hỗ trợ bạn từng bước nên không cần biết kỹ thuật." },
+    { icon: KeyRoundIcon, title: "Giao việc mà không lộ mật khẩu", body: "Phân quyền Admin và Nhân viên, xác thực 2 lớp, mật khẩu kết nối (token) được mã hóa AES-256-GCM và ghi nhật ký từng lệnh AI đã chạy." },
+    { icon: SlidersHorizontalIcon, title: "Rào chắn bảo vệ ngân sách", body: "Bật xác nhận 2 bước, trần ngân sách, giá thầu và giới hạn thao tác trong chế độ Tùy chỉnh nâng cao. Chế độ Cơ bản không áp dụng các mức trần này." },
   ];
   return (
-    <section id="tinh-nang" className="scroll-mt-16 bg-white py-20 sm:py-28">
+    <section id="tinh-nang" className="scroll-mt-16 bg-brand-soft py-20 sm:py-28">
       <Container>
         <SectionHead
-          eyebrow="Vì sao chọn Ads MCP Simple"
-          title="Mọi thứ để AI làm việc với quảng cáo của bạn" accent="gọn trong một link"
-          description="Ads MCP Simple cung cấp công cụ cho AI trong phạm vi tài khoản và quyền bạn cho phép; Skill hướng dẫn AI cách phân tích và thực hiện quy trình của doanh nghiệp."
+          eyebrow="Trong Ads MCP Simple có gì"
+          title="Mọi thứ để AI giúp bạn" accent="chạy quảng cáo gọn hơn"
+          description="AI chỉ làm việc trong phạm vi tài khoản và quyền bạn cho phép. Bạn luôn nắm quyền quyết định."
         />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((f, i) => (
@@ -296,20 +460,20 @@ export function Features() {
   );
 }
 
-/* -------------------------------------------------------------------- apify */
+/* ------------------------------------------------------- nghiên cứu thị trường */
 
 export function Apify() {
   const sources = [
-    { v: "shop", label: "Shopee · TikTok Shop · Lazada", body: "Tìm sản phẩm, so sánh giá, đọc thông tin và đánh giá để tìm nhu cầu, điểm khách hàng chưa hài lòng và góc nội dung mới." },
-    { v: "tiktok", label: "TikTok", body: "Tìm video theo từ khóa, hashtag hoặc kênh; phân tích bình luận; tham khảo quảng cáo nổi bật từ TikTok Creative Center." },
-    { v: "fb", label: "Facebook", body: "Nghiên cứu bài viết, thông tin Trang và bình luận công khai; xem quảng cáo đối thủ trong Thư viện quảng cáo Facebook." },
-    { v: "ig", label: "Instagram · YouTube", body: "Nghiên cứu tài khoản, kênh và nội dung công khai theo các tác vụ được hỗ trợ." },
-    { v: "google", label: "Google & website", body: "Nghiên cứu Google Search, địa điểm và đánh giá Google Maps, quảng cáo trên Google Ads Transparency Center và nội dung website." },
+    { v: "shop", label: "Shopee · TikTok Shop · Lazada", body: "Tìm sản phẩm, so sánh giá, đọc đánh giá để biết khách đang thiếu gì, chưa hài lòng chỗ nào và nên viết nội dung theo góc nào." },
+    { v: "tiktok", label: "TikTok", body: "Tìm video theo từ khóa, hashtag hoặc kênh; đọc bình luận; tham khảo quảng cáo nổi bật từ TikTok Creative Center." },
+    { v: "fb", label: "Facebook", body: "Xem bài viết, thông tin Trang và bình luận công khai; xem đối thủ đang chạy quảng cáo gì trong Thư viện quảng cáo Facebook." },
+    { v: "ig", label: "Instagram · YouTube", body: "Tìm hiểu tài khoản, kênh và nội dung công khai của đối thủ theo các tác vụ được hỗ trợ." },
+    { v: "google", label: "Google & website", body: "Xem kết quả tìm kiếm Google, địa điểm và đánh giá trên Google Maps, quảng cáo trong Google Ads Transparency Center và nội dung website." },
   ];
   const extras = [
-    { icon: ShieldCheckIcon, title: "Xoay vòng token theo credit", body: "Mỗi MCP dùng kho gồm token dùng chung công ty và token cá nhân của chủ MCP. Hệ thống ưu tiên tài khoản còn nhiều credit và tự thử tài khoản khác khi hết credit hoặc gặp lỗi phù hợp lúc bắt đầu chạy." },
-    { icon: LockKeyholeIcon, title: "Kiểm soát chi phí & bảo mật", body: "Trần chi phí mỗi lần chạy Apify (mặc định 1 USD/lần, áp dụng cả chế độ Cơ bản); trần theo ngày trong chế độ Tùy chỉnh nâng cao (mặc định 10 USD/ngày, 0 là không giới hạn). Token mã hóa AES-256-GCM, AI không nhận được token." },
-    { icon: RocketIcon, title: "Kết hợp Skill & lịch định kỳ", body: "Dùng Skill riêng để quy định tiêu chí chọn sản phẩm, cách phân tích đối thủ, mẫu báo cáo. Khi ứng dụng AI hoặc công cụ tự động hóa hỗ trợ gọi MCP theo lịch, giao quy trình nghiên cứu hằng tuần và gửi báo cáo vào Telegram." },
+    { icon: ShieldCheckIcon, title: "Dùng chung cho cả đội", body: "Công ty có thể dùng chung một kho tài khoản Apify cùng tài khoản cá nhân của chủ MCP. Hệ thống ưu tiên tài khoản còn nhiều credit và tự chuyển sang tài khoản khác khi hết credit hoặc gặp lỗi lúc bắt đầu chạy." },
+    { icon: LockKeyholeIcon, title: "Không lo tốn tiền ngoài ý muốn", body: "Mỗi lần nghiên cứu có trần chi phí (mặc định 1 USD/lần, áp dụng cả chế độ Cơ bản); chế độ Tùy chỉnh nâng cao còn có trần theo ngày (mặc định 10 USD/ngày, 0 là không giới hạn). Mật khẩu kết nối được mã hóa AES-256-GCM, AI không nhìn thấy." },
+    { icon: RocketIcon, title: "Giao việc theo lịch", body: "Dùng Skill riêng để dặn AI tiêu chí chọn sản phẩm, cách phân tích đối thủ, mẫu báo cáo. Khi ứng dụng AI hoặc công cụ tự động hóa của bạn hỗ trợ chạy theo lịch, có thể giao nghiên cứu hằng tuần và nhận báo cáo qua Telegram." },
   ];
   return (
     <section id="apify" className="bg-brand-hero relative isolate scroll-mt-16 overflow-hidden py-20 text-white sm:py-28">
@@ -317,15 +481,15 @@ export function Apify() {
       <Container>
         <SectionHead
           dark
-          eyebrow="Mới từ phiên bản 1.1.x"
-          title="AI quảng cáo hiểu thêm" accent="thị trường"
-          description="Số liệu quảng cáo cho bạn biết doanh nghiệp đang chạy thế nào. Với Apify, AI có thêm dữ liệu bên ngoài để tìm hiểu khách hàng quan tâm gì, đối thủ truyền thông ra sao và sản phẩm nào đáng nghiên cứu."
+          eyebrow="Nghiên cứu thị trường"
+          title="Biết khách nghĩ gì, đối thủ đang làm gì" accent="ngay trong cuộc trò chuyện"
+          description="Số liệu quảng cáo cho bạn biết mình đang chạy thế nào. Thông tin từ bên ngoài cho bạn biết khách quan tâm gì, đối thủ truyền thông ra sao và sản phẩm nào đáng làm — nhờ dịch vụ thu thập dữ liệu Apify được tích hợp sẵn."
         />
 
         <div className="grid items-start gap-6 lg:grid-cols-2">
           <Reveal>
             <Tabs defaultValue="shop" className="gap-4 rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur sm:p-6">
-              <p className="text-sm font-semibold text-white">Nghiên cứu sản phẩm, đối thủ và nội dung</p>
+              <p className="text-sm font-semibold text-white">AI có thể xem giúp bạn ở đâu?</p>
               <TabsList className="h-auto! w-full flex-wrap justify-start gap-1.5 bg-transparent p-0">
                 {sources.map((s) => (
                   <TabsTrigger key={s.v} value={s.v} className="h-auto! flex-none rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/70 hover:text-white data-active:border-transparent data-active:bg-white! data-active:text-navy!">
@@ -343,13 +507,13 @@ export function Apify() {
 
           <Reveal delay={120}>
             <div className="rounded-2xl border border-white/15 bg-ink/60 p-5 sm:p-6">
-              <p className="text-sm font-semibold text-white">Số liệu doanh nghiệp + dữ liệu thị trường trong cùng một MCP</p>
-              <p className="mt-2 text-sm text-white/65">Không cần tách riêng cuộc trò chuyện phân tích quảng cáo và nghiên cứu thị trường. Chỉ cần giao việc:</p>
+              <p className="text-sm font-semibold text-white">Số liệu của bạn + thông tin thị trường trong cùng một câu hỏi</p>
+              <p className="mt-2 text-sm text-white/65">Không cần tách riêng việc phân tích quảng cáo và nghiên cứu thị trường. Chỉ cần giao việc:</p>
               <blockquote className="mt-4 rounded-xl border-l-4 border-violet bg-white/5 p-4 text-[15px] leading-relaxed text-white/90 italic">
-                “Phân tích CPA các chiến dịch Meta tuần qua, xem đối thủ đang chạy thông điệp gì và đọc đánh giá sản phẩm cùng phân khúc. Đề xuất 3 hướng quảng cáo mới, giải thích căn cứ cho từng hướng. Chưa thay đổi quảng cáo.”
+                “Phân tích chi phí mỗi khách của các chiến dịch Facebook tuần qua, xem đối thủ đang chạy thông điệp gì và đọc đánh giá sản phẩm cùng phân khúc. Đề xuất 3 hướng quảng cáo mới, giải thích căn cứ cho từng hướng. Chưa thay đổi quảng cáo.”
               </blockquote>
               <p className="mt-4 text-sm text-white/65">
-                Bạn cũng có thể tạo <b className="text-white">MCP chỉ dùng Apify</b> cho công việc nghiên cứu, chưa cần kết nối tài khoản quảng cáo (từ bản 1.1.1).
+                Bạn cũng có thể dùng riêng phần <b className="text-white">nghiên cứu thị trường</b>, chưa cần kết nối tài khoản quảng cáo (từ bản 1.1.1).
               </p>
             </div>
           </Reveal>
@@ -383,29 +547,29 @@ export function Apify() {
 
 export function SkillSection() {
   const points = [
-    "Kiểm tra theo dõi chuyển đổi có đáng tin trước khi kết luận.",
-    "Tìm nguyên nhân gốc ở cấp chiến dịch, nhóm quảng cáo, quảng cáo.",
-    "Xử lý Breakdown Effect và chi phí biên.",
-    "Đề xuất scale, dừng hoặc thử nghiệm dưới dạng giả thuyết kiểm chứng được.",
+    "Kiểm tra số liệu chuyển đổi có đáng tin không trước khi kết luận.",
+    "Tìm đúng nguyên nhân gốc: do chiến dịch, nhóm quảng cáo hay mẫu quảng cáo.",
+    "Giải thích vì sao Facebook dồn tiền vào chỗ trông “đắt” nhưng vẫn đáng (Breakdown Effect, chi phí biên).",
+    "Đề xuất tăng ngân sách, dừng hay thử cái mới — kèm cách kiểm chứng.",
   ];
   return (
-    <section id="skill" className="scroll-mt-16 bg-brand-soft py-20 sm:py-28">
+    <section id="skill" className="scroll-mt-16 bg-white py-20 sm:py-28">
       <Container className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <Reveal>
-          <p className="mb-3 font-archivo text-xs font-semibold tracking-[0.2em] text-iris uppercase">Skill độc quyền</p>
-          <AnimatedHeading title="Skill phân tích quảng cáo Meta" accent="cho thị trường Việt Nam" align="left" className="lg:text-4xl" />
+          <p className="mb-3 font-archivo text-xs font-semibold tracking-[0.2em] text-iris uppercase">Chỉ có khi mua Ads MCP Simple</p>
+          <AnimatedHeading title="Chuyên gia phân tích quảng cáo Facebook" accent="cho bán hàng kiểu Việt Nam" align="left" className="lg:text-4xl" />
           <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Skill do noti.vn phát triển, chỉ người kích hoạt Ads MCP Simple mới được cấp quyền sử dụng. Skill chạy với dữ liệu từ Ads MCP Simple hoặc file Excel/CSV xuất từ Ads Manager, thiết kế cho tài khoản chốt đơn qua inbox, Zalo, điện thoại, sàn TMĐT — nơi ROAS trên tài khoản thường không đáng tin.
+            Skill do noti.vn phát triển, chỉ người kích hoạt Ads MCP Simple mới được dùng. Làm cho tài khoản chốt đơn qua inbox, Zalo, điện thoại, sàn TMĐT — kiểu bán hàng mà công cụ nước ngoài hay đọc sai vì ROAS trên tài khoản thường không đáng tin.
           </p>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Có thể kết hợp với Skill riêng của doanh nghiệp để đưa tiêu chí sản phẩm, biên lợi nhuận và cách đọc dữ liệu thị trường vào quy trình phân tích.
+            Chạy với dữ liệu từ Ads MCP Simple hoặc file Excel/CSV xuất từ Ads Manager. Có thể kết hợp với Skill riêng của doanh nghiệp để đưa tiêu chí sản phẩm, biên lợi nhuận và cách đọc dữ liệu thị trường vào quy trình phân tích.
           </p>
         </Reveal>
         <Reveal delay={120}>
           <Card className="p-2 ring-iris/20">
             <CardHeader className="p-4 sm:p-6 sm:pb-2">
               <CardTitle className="text-lg font-semibold text-navy">Skill giúp AI làm gì?</CardTitle>
-              <CardDescription>Quy trình chẩn đoán trước khi đề xuất hành động</CardDescription>
+              <CardDescription>Chẩn đoán kỹ trước khi đề xuất hành động</CardDescription>
             </CardHeader>
             <CardContent className="p-4 sm:p-6 sm:pt-2">
               <ol className="grid gap-4">
@@ -428,18 +592,18 @@ export function SkillSection() {
 
 export function Setup() {
   const steps = [
-    { icon: ServerIcon, title: "Chuẩn bị", body: "VPS Ubuntu 24.04 hoặc Debian 12, tên miền con và tài khoản GitHub được cấp quyền vào repo." },
-    { icon: TerminalIcon, title: "Chạy script cài nhanh", body: "Làm theo video, sao chép và dán lệnh chạy script cài đặt, rồi điền thông tin được yêu cầu." },
-    { icon: BotIcon, title: "Kết nối", body: "Kết nối tài khoản quảng cáo và công cụ AI; thêm token Apify nếu cần nghiên cứu dữ liệu thị trường." },
-    { icon: LifeBuoyIcon, title: "Vận hành", body: "Cập nhật ngay trong web, tự sao lưu hằng ngày, tự quay về bản cũ nếu lỗi. Có hướng dẫn khôi phục và xử lý lỗi thường gặp." },
+    { icon: ServerIcon, title: "Chuẩn bị", body: "Một máy chủ (VPS) Ubuntu 24.04 hoặc Debian 12, một tên miền con và tài khoản GitHub. Chưa có thì Nextgency hướng dẫn." },
+    { icon: TerminalIcon, title: "Chạy script cài nhanh", body: "Làm theo video: dán lệnh, điền thông tin. Nextgency làm cùng bạn." },
+    { icon: BotIcon, title: "Kết nối", body: "Kết nối tài khoản quảng cáo, ứng dụng AI bạn dùng và Telegram; thêm token Apify nếu cần nghiên cứu thị trường." },
+    { icon: MessageCircleQuestionIcon, title: "Bắt đầu hỏi", body: "Nextgency hướng dẫn cách hỏi và giao việc cho AI hiệu quả." },
   ];
   return (
-    <section id="cai-dat" className="scroll-mt-16 bg-white py-20 sm:py-28">
+    <section id="cai-dat" className="scroll-mt-16 bg-brand-soft py-20 sm:py-28">
       <Container>
         <SectionHead
           eyebrow="Cài đặt & hỗ trợ"
-          title="Cài nhanh bằng script" accent="và có Nextgency đồng hành setup"
-          description="Quy trình triển khai đã được đơn giản hoá: copy & paste lệnh cài đặt, điền một số thông tin để triển khai trên VPS của bạn. Video hướng dẫn được mở sau khi kích hoạt sản phẩm."
+          title="Cài xong trong một buổi," accent="có Nextgency đồng hành"
+          description={`Có script cài nhanh và video hướng dẫn (mở sau khi kích hoạt). Nextgency hỗ trợ trong giờ làm việc: ${LEGAL.workHours}.`}
         />
         <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s, i) => (
@@ -459,14 +623,14 @@ export function Setup() {
             <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_1fr]">
               <div>
                 <Badge className="mb-4 h-6 border border-white/20 bg-white/10 text-white"><HeadsetIcon /> Gói của Nextgency</Badge>
-                <h3 className="text-balance text-2xl font-bold sm:text-3xl">Không rành kỹ thuật? Nextgency hỗ trợ setup cho bạn</h3>
+                <h3 className="text-balance text-2xl font-bold sm:text-3xl">Không rành kỹ thuật? Nextgency làm phần kỹ thuật cùng bạn</h3>
                 <p className="mt-3 text-white/70">
-                  Bạn không phải tự mày mò từng bước. Đội ngũ Nextgency đồng hành để Ads MCP Simple chạy được trên hạ tầng của chính bạn.
+                  Bạn không phải tự mày mò từng bước. Đội ngũ Nextgency đồng hành để đội quảng cáo AI chạy được trên hạ tầng của chính bạn.
                 </p>
               </div>
               <ul className="grid gap-3 text-sm text-white/90 sm:text-base">
-                <Tick dark>Hỗ trợ cài đặt lên VPS và cấu hình tên miền</Tick>
-                <Tick dark>Hỗ trợ kết nối tài khoản Meta, TikTok, Google, OpenAI Ads</Tick>
+                <Tick dark>Hỗ trợ cài đặt lên máy chủ (VPS) và cấu hình tên miền</Tick>
+                <Tick dark>Hỗ trợ kết nối tài khoản Facebook, TikTok, Google, OpenAI Ads</Tick>
                 <Tick dark>Hỗ trợ kết nối Claude / ChatGPT / Gemini và Telegram</Tick>
                 <Tick dark>Hướng dẫn cách hỏi và giao việc cho AI hiệu quả</Tick>
               </ul>
@@ -478,18 +642,68 @@ export function Setup() {
   );
 }
 
+/* ----------------------------------------------------------------- audience */
+
+export function Audience() {
+  const fit = [
+    "Bạn chạy quảng cáo trên nhiều tài khoản, nhiều nền tảng",
+    "Bạn chốt đơn qua inbox, Zalo, điện thoại và muốn AI đọc đúng hiệu quả",
+    "Đội marketing 2–20 người cần phân quyền, trần ngân sách và nhật ký minh bạch",
+    "Bạn cần nghiên cứu sản phẩm, đối thủ, giá trước khi ra nội dung",
+    "Bạn muốn nhận báo cáo quảng cáo định kỳ qua Telegram",
+  ];
+  const notFit = [
+    "Bạn muốn AI tự chạy theo lịch mà không cấu hình ứng dụng AI hoặc công cụ tự động hóa",
+    "Bạn cần đăng hoặc sửa bài Fanpage: phần Fanpage chỉ đọc",
+    "Bạn chưa đủ khả năng đọc hiểu tài liệu để biết sản phẩm có phù hợp với mình hay không",
+  ];
+  return (
+    <section className="bg-white py-20 sm:py-28">
+      <Container>
+        <SectionHead eyebrow="Dành cho ai" title="Sản phẩm này hợp với bạn nếu…" />
+        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <Reveal>
+            <Card className="h-full p-2 ring-iris/15">
+              <CardContent className="p-4 sm:p-6">
+                <ul className="grid gap-4 text-[15px] leading-relaxed text-navy/90">
+                  {fit.map((t) => <Tick key={t}>{t}</Tick>)}
+                </ul>
+              </CardContent>
+            </Card>
+          </Reveal>
+          <Reveal delay={120}>
+            <Card className="self-start border-0 bg-navy p-2 text-white ring-white/10">
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="mb-4 text-lg font-semibold">Chưa hợp nếu</h3>
+                <ul className="grid gap-4 text-[15px] leading-relaxed text-white/80">
+                  {notFit.map((t) => (
+                    <li key={t} className="flex items-start gap-3">
+                      <span className="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-red-500/20 text-red-300"><XIcon className="size-3.5" strokeWidth={3} /></span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </Reveal>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 /* ------------------------------------------------------------------ includes */
 
 export function Includes() {
   const get = [
-    "Quyền truy cập repo GitHub riêng của Noti: bộ cài Docker Compose, script cài nhanh và hướng dẫn self-host tiếng Việt.",
+    "Phần mềm Ads MCP Simple dùng trọn đời, cập nhật miễn phí ngay trong web.",
+    "Nextgency hỗ trợ cài đặt và kết nối cho bạn (xem gói hỗ trợ ở trên).",
+    "Skill độc quyền phân tích quảng cáo Facebook cho thị trường Việt Nam.",
     "Video hướng dẫn cài đặt, được xem sau khi kích hoạt sản phẩm.",
-    "Skill độc quyền phân tích quảng cáo Meta cho thị trường Việt Nam.",
-    "Cập nhật ngay trong web, tự sao lưu hằng ngày, tự quay về bản cũ nếu lỗi.",
-    "Nextgency hỗ trợ setup cho bạn (xem gói hỗ trợ ở trên).",
+    "Bộ cài sẵn trong repo GitHub riêng của Noti (Docker Compose, script cài nhanh, hướng dẫn tiếng Việt); tự sao lưu hằng ngày, tự quay về bản cũ nếu lỗi.",
   ];
   const supported = [
-    "Hỏi số liệu và thao tác quảng cáo Meta, TikTok, Google Ads, OpenAI Ads qua AI theo quyền đã cấp và khả năng API của từng loại chiến dịch.",
+    "Hỏi số liệu và thao tác quảng cáo Facebook, TikTok, Google Ads, OpenAI Ads qua AI theo quyền đã cấp và khả năng API của từng loại chiến dịch.",
     "Nghiên cứu sản phẩm, giá, đánh giá, đối thủ và nội dung công khai qua Apify.",
     "Nhận thông báo Telegram khi có thay đổi; yêu cầu AI gửi báo cáo vào kênh đã kết nối.",
     "Kết hợp ứng dụng AI hoặc công cụ tự động hóa hỗ trợ gọi MCP theo lịch.",
@@ -556,17 +770,17 @@ export function Includes() {
 
 export function Pricing() {
   const includes = [
-    "Ads MCP Simple — sở hữu trọn đời, cập nhật miễn phí",
-    "Repo GitHub riêng: Docker Compose, script cài nhanh, hướng dẫn tiếng Việt",
-    "Video hướng dẫn cài đặt + Skill phân tích Meta Ads VN",
-    "Nextgency hỗ trợ setup cho bạn",
+    "Ads MCP Simple — dùng trọn đời, cập nhật miễn phí",
+    "Nextgency hỗ trợ cài đặt và kết nối cho bạn",
+    "Skill phân tích quảng cáo Facebook cho bán hàng kiểu Việt Nam",
+    "Video hướng dẫn cài đặt + bộ cài sẵn tiếng Việt (repo GitHub riêng)",
     "Kích hoạt sau khi thanh toán, xác nhận tự động",
   ];
   return (
     <section id="mua" className="bg-brand-hero relative isolate scroll-mt-16 overflow-hidden py-20 text-white sm:py-28">
       <div className="grid-fade pointer-events-none absolute inset-0 -z-10 opacity-60" aria-hidden />
       <Container>
-        <SectionHead dark eyebrow="Bắt đầu ngay" title={`Sở hữu ${SITE.productName}`} accent="kèm hỗ trợ setup" description="Một lần thanh toán. Không phí hàng tháng cho phần mềm." />
+        <SectionHead dark eyebrow="Bắt đầu ngay" title={`Sở hữu ${SITE.productName}`} accent="kèm hỗ trợ cài đặt" description="Một lần thanh toán. Không phí hằng tháng cho phần mềm." />
         <Reveal>
           <div className="mx-auto max-w-[960px] overflow-hidden rounded-3xl border border-white/20 bg-white text-navy shadow-2xl shadow-black/30">
             <div className="grid sm:grid-cols-[1fr_1.1fr]">
@@ -574,7 +788,7 @@ export function Pricing() {
                 <p className="font-archivo text-xs font-semibold tracking-[0.2em] text-iris uppercase">Trọn bộ</p>
                 {SITE.compareAtPrice && <p className="text-lg text-muted-foreground line-through"><Vnd amount={SITE.compareAtPrice} /></p>}
                 <p className="text-brand-gradient-dark text-5xl font-black tracking-tight sm:text-6xl"><Vnd amount={SITE.price} /></p>
-                <p className="text-sm text-muted-foreground">Đã gồm hỗ trợ setup</p>
+                <p className="text-sm text-muted-foreground">Đã gồm hỗ trợ cài đặt</p>
                 <div className="mt-5 flex justify-center">
                   <BuyStarButton className="w-full text-base font-semibold">
                     Mua ngay
@@ -589,7 +803,7 @@ export function Pricing() {
             </div>
             <div className="grid gap-3 border-t bg-muted/60 p-6 text-sm leading-relaxed text-muted-foreground sm:grid-cols-2 sm:p-8">
               <p><b className="text-navy">Chú ý quan trọng.</b> Đọc thật kỹ thông tin để xem bạn có phù hợp với nội dung này hay không. Mọi thông tin đã có sẵn trong phần mô tả. Hãy có trách nhiệm với đồng tiền của bạn.</p>
-              <p><b className="text-navy">Lưu ý khi mua dự án GitHub.</b> Dự án GitHub không hoàn tiền vì sau khi được thêm vào repo, người mua đã xem và clone được toàn bộ mã nguồn. Cần có tài khoản GitHub — bạn cung cấp tên tài khoản khi đặt mua để nhận lời mời vào repo. Xem <Link href="/policies/chinh-sach-thanh-toan" className="font-semibold text-iris underline underline-offset-4">Chính sách thanh toán &amp; hoàn tiền</Link> và <Link href="/terms" className="font-semibold text-iris underline underline-offset-4">Điều khoản sử dụng</Link>.</p>
+              <p><b className="text-navy">Lưu ý khi mua dự án GitHub.</b> Dự án GitHub không hoàn tiền vì sau khi được thêm vào repo, người mua đã xem và tải được toàn bộ mã nguồn. Tài khoản GitHub không bắt buộc khi đặt mua — nếu bạn chưa có, Nextgency sẽ hướng dẫn tạo và cấp quyền. Xem <Link href="/policies/chinh-sach-thanh-toan" className="font-semibold text-iris underline underline-offset-4">Chính sách thanh toán &amp; hoàn tiền</Link> và <Link href="/terms" className="font-semibold text-iris underline underline-offset-4">Điều khoản sử dụng</Link>.</p>
             </div>
           </div>
         </Reveal>
@@ -601,20 +815,22 @@ export function Pricing() {
 /* ---------------------------------------------------------------------- faq */
 
 const FAQ = [
-  { q: "Ads MCP Simple là gì và dùng để làm gì?", a: "Ads MCP Simple là phần mềm MCP quản lý quảng cáo tự host do Noti (noti.vn) phát triển. Bạn dùng Claude, ChatGPT hoặc ứng dụng Gemini được hỗ trợ để hỏi số liệu và thao tác Meta Ads, TikTok Ads, Google Ads, OpenAI Ads bằng tiếng Việt. Từ bản 1.1.x, sản phẩm tích hợp Apify để kết hợp dữ liệu quảng cáo với nghiên cứu sản phẩm, đối thủ và thị trường." },
-  { q: "Apify dùng để làm gì? Có thể dùng riêng để nghiên cứu không?", a: "Apify giúp AI thu thập dữ liệu công khai để nghiên cứu sản phẩm, giá, đánh giá, quảng cáo và nội dung đối thủ — nguồn gồm Shopee, TikTok Shop, Lazada, TikTok, Facebook, Instagram, YouTube, Google và website theo danh mục tác vụ được hỗ trợ. Từ bản 1.1.1, bạn có thể tạo MCP chỉ dùng Apify khi kho có token sử dụng được, chưa cần kết nối tài khoản quảng cáo." },
+  { q: "Tôi không rành công nghệ, có dùng được không?", a: "Có. Dùng hằng ngày bạn chỉ cần gõ câu hỏi bằng tiếng Việt trong Claude, ChatGPT hoặc Gemini. Phần cài đặt cần một máy chủ (VPS) và vài bước kỹ thuật — Nextgency hỗ trợ làm cùng bạn nên bạn không phải tự mày mò." },
+  { q: "MCP là gì? Ads MCP Simple dùng để làm gì?", a: "MCP là chuẩn kết nối giúp AI (Claude, ChatGPT, Gemini…) đọc và thao tác trên đúng những tài khoản bạn cho phép. Ads MCP Simple là phần mềm MCP quản lý quảng cáo tự host do Noti (noti.vn) phát triển: bạn hỏi số liệu và thao tác Facebook (Meta) Ads, TikTok Ads, Google Ads, OpenAI Ads bằng tiếng Việt. Từ bản 1.1.x, sản phẩm tích hợp Apify để kết hợp số liệu quảng cáo với nghiên cứu sản phẩm, đối thủ và thị trường." },
+  { q: "AI có tự ý tiêu tiền quảng cáo của tôi không?", a: "Bạn quyết định AI được làm gì. Ở chế độ Tùy chỉnh nâng cao, bạn đặt xác nhận 2 bước, trần ngân sách, trần giá thầu và giới hạn thao tác. Mọi lệnh AI chạy đều được ghi vào nhật ký. Chế độ Cơ bản không áp dụng các mức trần này; bạn cũng có thể dặn AI chỉ phân tích và chưa thay đổi gì trên tài khoản." },
+  { q: "Apify dùng để làm gì? Có thể dùng riêng để nghiên cứu không?", a: "Apify giúp AI thu thập dữ liệu công khai để nghiên cứu sản phẩm, giá, đánh giá, quảng cáo và nội dung đối thủ — nguồn gồm Shopee, TikTok Shop, Lazada, TikTok, Facebook, Instagram, YouTube, Google và website theo danh mục tác vụ được hỗ trợ. Từ bản 1.1.1, bạn có thể tạo MCP chỉ dùng Apify khi kho có token sử dụng được, chưa cần kết nối tài khoản quảng cáo. Chi phí chạy tính trên tài khoản Apify của bạn." },
   { q: "Hỗ trợ những nền tảng quảng cáo và AI nào?", a: "Nền tảng quảng cáo: Meta Ads (Facebook, Instagram), TikTok Ads (gồm GMV Max theo quyền riêng), Google Ads (gồm báo cáo YouTube) và OpenAI Ads. Apify cung cấp dữ liệu thị trường công khai, Telegram nhận thông báo. Phía AI hỗ trợ Claude, ChatGPT, Claude Code, Gemini CLI và Gemini Enterprise; Gemini web cá nhân chưa được hỗ trợ trong hướng dẫn hiện tại." },
-  { q: "Tôi cần chuẩn bị gì trước khi mua?", a: "Một tài khoản GitHub (để được mời vào repo; chưa có thì Nextgency hướng dẫn tạo khi hỗ trợ), một VPS Ubuntu 24.04 hoặc Debian 12 cùng tên miền con, tài khoản của ứng dụng AI bạn muốn dùng, và tài khoản Apify nếu cần nghiên cứu thị trường. Chi phí VPS, tên miền, AI và Apify phát sinh riêng, không nằm trong giá mua." },
-  { q: "Gói hỗ trợ setup của Nextgency gồm những gì?", a: "Nextgency đồng hành cùng bạn trong quá trình đưa Ads MCP Simple vào hoạt động: cài lên VPS, kết nối tài khoản quảng cáo, kết nối ứng dụng AI và Telegram, hướng dẫn cách giao việc cho AI. Sau khi thanh toán, đội ngũ sẽ liên hệ qua Zalo (số bạn đã đăng ký) để thống nhất lịch làm việc; cần hỗ trợ thêm bạn có thể nhắn tin fanpage Nextgency." },
+  { q: "Tôi cần chuẩn bị gì trước khi mua?", a: "Khi mua, bạn chỉ cần điền họ tên, số điện thoại/Zalo và email. Để chạy được, về sau bạn cần một VPS Ubuntu 24.04 hoặc Debian 12 cùng tên miền con, tài khoản của ứng dụng AI bạn muốn dùng, tài khoản GitHub (chưa có thì Nextgency hướng dẫn tạo khi hỗ trợ) và tài khoản Apify nếu cần nghiên cứu thị trường. Chi phí VPS, tên miền, AI và Apify phát sinh riêng, không nằm trong giá mua." },
+  { q: "Gói hỗ trợ cài đặt của Nextgency gồm những gì?", a: "Nextgency đồng hành cùng bạn trong quá trình đưa Ads MCP Simple vào hoạt động: cài lên VPS, kết nối tài khoản quảng cáo, kết nối ứng dụng AI và Telegram, hướng dẫn cách giao việc cho AI. Sau khi thanh toán, đội ngũ sẽ liên hệ qua Zalo (số bạn đã đăng ký) để thống nhất lịch làm việc; cần hỗ trợ thêm bạn có thể nhắn tin fanpage Nextgency." },
   { q: "Thanh toán như thế nào và bao lâu thì được xác nhận?", a: "Bạn điền thông tin, hệ thống tạo mã QR chuyển khoản với số tiền và nội dung điền sẵn. Chỉ cần quét bằng app ngân hàng; giao dịch được ghi nhận tự động qua SePay và trang sẽ báo thành công ngay khi nhận được tiền. Vui lòng không sửa nội dung chuyển khoản." },
-  { q: "Tôi có được hoàn tiền không?", a: "Dự án GitHub không hoàn tiền vì sau khi được thêm vào repo, người mua đã xem và clone được toàn bộ mã nguồn. Vì vậy hãy đọc kỹ phần “Dành cho ai”, “Phạm vi và giới hạn” trước khi mua, hoặc liên hệ Nextgency nếu còn băn khoăn." },
+  { q: "Tôi có được hoàn tiền không?", a: "Dự án GitHub không hoàn tiền vì sau khi được thêm vào repo, người mua đã xem và tải được toàn bộ mã nguồn. Vì vậy hãy đọc kỹ phần “Sản phẩm này hợp với bạn nếu…” và “Phạm vi và giới hạn” trước khi mua, hoặc liên hệ Nextgency nếu còn băn khoăn." },
 ];
 
 export function Faq() {
   return (
     <section id="faq" className="scroll-mt-16 bg-white py-20 sm:py-28">
       <Container className="max-w-[960px]">
-        <SectionHead eyebrow="FAQ" title="Câu hỏi thường gặp" />
+        <SectionHead eyebrow="Hỏi đáp" title="Câu hỏi thường gặp" />
         <Reveal>
           <Accordion className="rounded-2xl border bg-card px-5 sm:px-6">
             {FAQ.map((f, i) => (
@@ -643,16 +859,25 @@ export const faqJsonLd = {
 /* -------------------------------------------------------------- final + foot */
 
 export function FinalCta() {
+  const zalo = zaloHref();
   return (
     <section className="bg-brand-soft py-16 sm:py-20">
       <Container>
         <Reveal className="mx-auto max-w-[960px] text-center">
-          <AnimatedHeading title="Sẵn sàng để AI làm việc" accent="cùng đội quảng cáo của bạn?" />
-          <p className="mt-4 text-muted-foreground">Một lần thanh toán <Vnd amount={SITE.price} /> — có Nextgency đồng hành setup.</p>
-          <div className="mt-8 flex justify-center">
+          <AnimatedHeading title="Đối thủ của bạn sẽ hỏi AI" accent="trước khi chi tiền quảng cáo. Bạn thì sao?" />
+          <p className="mt-4 text-muted-foreground">Một lần thanh toán <Vnd amount={SITE.price} /> — có Nextgency đồng hành cài đặt.</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <BuyStarButton className="text-base font-semibold">
               Mua ngay <ArrowRightIcon className="size-4" />
             </BuyStarButton>
+            <a
+              href={zalo || SITE.contact.fanpage}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full border-iris/30 bg-white px-6 text-base text-navy hover:bg-secondary")}
+            >
+              {zalo ? "Hỏi qua Zalo" : "Nhắn tin fanpage"}
+            </a>
           </div>
         </Reveal>
       </Container>

@@ -5,7 +5,7 @@
 export const SITE = {
   name: "Nextgency",
   productName: "Ads MCP Simple",
-  tagline: "Quản lý Ads & nghiên cứu thị trường bằng AI",
+  tagline: "Đội quảng cáo AI cho chủ doanh nghiệp và người chạy Ads",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://nextgency.vn",
   // Giá bán (VND). Server luôn dùng giá này để tạo đơn — client không gửi giá lên.
   price: 1_999_000,
@@ -21,6 +21,15 @@ export const SITE = {
     fanpage: process.env.NEXT_PUBLIC_CONTACT_FANPAGE || "https://web.facebook.com/nextgency",
   },
 } as const;
+
+/** Link mở Zalo của Nextgency (NEXT_PUBLIC_CONTACT_ZALO có thể là link zalo.me hoặc số điện thoại). Trống = chưa cấu hình. */
+export function zaloHref(): string {
+  const z = SITE.contact.zalo.trim();
+  if (!z) return "";
+  if (/^https?:\/\//i.test(z)) return z;
+  const digits = z.replace(/\D/g, "");
+  return digits ? `https://zalo.me/${digits}` : "";
+}
 
 /** Thông tin dùng trong các trang chính sách. Chỉnh cho đúng với thực tế của Nextgency. */
 export const LEGAL = {

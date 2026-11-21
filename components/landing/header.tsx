@@ -9,12 +9,12 @@ import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 import { cn } from "@/lib/utils";
 
 const NAV = [
+  { href: "#mcp-la-gi", label: "MCP là gì" },
+  { href: "#cach-dung", label: "Cách dùng" },
   { href: "#tinh-nang", label: "Tính năng" },
-  { href: "#apify", label: "Apify" },
-  { href: "#skill", label: "Skill Meta Ads" },
   { href: "#cai-dat", label: "Cài đặt & hỗ trợ" },
   { href: "#huong-dan", label: "Hướng dẫn mua" },
-  { href: "#faq", label: "FAQ" },
+  { href: "#faq", label: "Hỏi đáp" },
 ];
 
 export function SiteHeader() {

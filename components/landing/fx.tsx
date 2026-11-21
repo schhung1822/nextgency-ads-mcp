@@ -9,7 +9,6 @@ import BlurText from "@/components/react-bits/BlurText";
 import CountUp from "@/components/react-bits/CountUp";
 import GradientText from "@/components/react-bits/GradientText";
 import LogoLoop from "@/components/react-bits/LogoLoop";
-import RotatingText from "@/components/react-bits/RotatingText";
 import ShinyText from "@/components/react-bits/ShinyText";
 import { cn } from "@/lib/utils";
 
@@ -73,16 +72,16 @@ export function AnimatedHeading({
 
 export function HeroTitle() {
   return (
-    <h1 className="text-4xl leading-[1.08] font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+    <h1 className="text-4xl leading-[1.08] font-bold tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
       <BlurText
-        text="Quản lý Ads & nghiên cứu thị trường"
+        text="Năm 2027, ai kinh doanh"
         animateBy="words"
         trigger="load"
         color="#ffffff"
         className=""
       />
       <GradientText colors={["#9ed6ff", "#c08dfe", "#9a63ff", "#9ed6ff"]} animationSpeed={6}>
-        bằng AI
+        cũng cần biết MCP.
       </GradientText>
     </h1>
   );
@@ -90,23 +89,6 @@ export function HeroTitle() {
 
 export function ShinyBadgeText({ children }: { children: string }) {
   return <ShinyText text={children} color="#ffffffb3" shineColor="#ffffff" speed={3} />;
-}
-
-const PLATFORMS = ["Meta Ads", "TikTok Ads", "Google Ads", "OpenAI Ads"];
-
-export function PlatformRotator() {
-  return (
-    <p className="mt-5 flex flex-wrap items-center gap-x-2.5 gap-y-2 text-lg font-semibold text-white sm:text-xl">
-      <span>Một link MCP cho</span>
-      <RotatingText
-        texts={[...PLATFORMS, "Apify", "Telegram"]}
-        rotationInterval={2200}
-        effect="blur"
-        animatePresenceMode="sync"
-        mainClassName="w-fit overflow-hidden rounded-lg bg-white/15 px-3 py-0.5 text-white ring-1 ring-white/25 backdrop-blur"
-      />
-    </p>
-  );
 }
 
 export function Stat({
@@ -126,11 +108,10 @@ export function Stat({
 }
 
 const MARQUEE = [
-  "Meta Ads",
+  "Facebook Ads",
   "TikTok Ads",
   "Google Ads",
   "OpenAI Ads",
-  "Apify",
   "Telegram",
   "Claude",
   "ChatGPT",
@@ -138,7 +119,7 @@ const MARQUEE = [
   "Shopee",
   "TikTok Shop",
   "Lazada",
-  "Facebook Ads Library",
+  "Thư viện quảng cáo Facebook",
   "Google Maps",
   "YouTube",
 ];
