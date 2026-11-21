@@ -10,6 +10,7 @@ import {
   releaseFulfillment,
   setInvite,
 } from "@/lib/orders";
+import { reportPurchase } from "@/lib/server-tracking";
 import { formatVnd } from "@/lib/site";
 import { deliverOrderEvent } from "@/lib/webhooks";
 
@@ -62,6 +63,10 @@ export async function fulfillOrder(code: string): Promise<FulfillResult> {
       }
       await markLarkNotified(code);
     }
+
+    // 2b) Hoàn tất thanh toán → báo Meta Conversions API (Purchase). Cùng event_id với Pixel trình duyệt nên Meta
+    //     tự gộp; chạy lại nhiều lần vẫn an toàn; không bao giờ throw; tự bỏ qua nếu chưa cấu hình token.
+    await reportPurchase(order);
 
     // 3) Webhook gửi đi (tự thử lại + báo Lark khi thất bại hẳn; không tự gửi lại nếu đã có kết quả)
     if (!order.hooks?.paid) {

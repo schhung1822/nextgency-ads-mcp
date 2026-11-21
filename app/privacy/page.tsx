@@ -18,7 +18,7 @@ export default function PrivacyPage() {
 
       <Sec n={2} title="Dữ liệu chúng tôi xử lý">
         <Ul>
-          <li><b>Thông tin đặt hàng:</b> họ tên, số điện thoại/Zalo, email, tên tài khoản GitHub và ghi chú bạn nhập trong biểu mẫu.</li>
+          <li><b>Thông tin đặt hàng:</b> họ tên, số điện thoại/Zalo, email, tên tài khoản GitHub (nếu bạn cung cấp) và ghi chú bạn nhập trong biểu mẫu.</li>
           <li><b>Giao dịch:</b> mã đơn, số tiền, trạng thái thanh toán, và dữ liệu giao dịch ngân hàng do SePay gửi về (ngân hàng, mã giao dịch, thời gian, nội dung chuyển khoản).</li>
           <li><b>Kỹ thuật:</b> địa chỉ IP và nhật ký truy cập ở mức máy chủ, dùng để bảo mật và giới hạn tần suất chống spam/lạm dụng.</li>
           <li><b>Hỗ trợ:</b> nội dung, ảnh chụp màn hình, thông báo lỗi và thông tin khác bạn chủ động gửi khi yêu cầu hỗ trợ.</li>
@@ -45,7 +45,12 @@ export default function PrivacyPage() {
       </Sec>
 
       <Sec n={5} title="Cookie và công nghệ đo lường">
-        <p>Hiện website không đặt cookie quảng cáo hay cookie theo dõi hành vi. Khi hiển thị mã QR, trình duyệt của bạn tải hình ảnh từ dịch vụ qr.sepay.vn nên địa chỉ IP của bạn được gửi tới bên đó theo chính sách của họ. Nếu sau này chúng tôi tích hợp công cụ đo lường (ví dụ Google Analytics, Meta Pixel), chính sách này sẽ được cập nhật trước khi áp dụng.</p>
+        <p>Website sử dụng các công cụ đo lường dưới đây để hiểu lượt truy cập và đánh giá hiệu quả quảng cáo:</p>
+        <Ul>
+          <li><b>Google Tag Manager / Google Analytics:</b> ghi nhận lượt xem trang và các hành động như hoàn tất đăng ký, hoàn tất thanh toán. Các công cụ này có thể đặt cookie (ví dụ _ga) và nhận địa chỉ IP, thông tin trình duyệt/thiết bị của bạn.</li>
+          <li><b>Meta Pixel và Meta Conversions API:</b> ghi nhận các hành động trên để đo lường và tối ưu quảng cáo; có thể đặt cookie (_fbp, _fbc). Khi bạn đăng ký hoặc thanh toán, máy chủ của chúng tôi gửi cho Meta email, số điện thoại, họ tên (đã băm một chiều bằng SHA-256), địa chỉ IP, thông tin trình duyệt, mã đơn và giá trị đơn hàng. Chúng tôi không gửi ghi chú, tên tài khoản GitHub hay thông tin ngân hàng của bạn.</li>
+        </Ul>
+        <p>Bạn có thể từ chối hoặc xóa cookie trong trình duyệt, dùng tiện ích chặn theo dõi, hoặc liên hệ chúng tôi để yêu cầu ngừng dùng dữ liệu của bạn cho mục đích này. Ngoài ra, khi hiển thị mã QR, trình duyệt của bạn tải hình ảnh từ dịch vụ qr.sepay.vn nên địa chỉ IP của bạn được gửi tới bên đó theo chính sách của họ.</p>
       </Sec>
 
       <Sec n={6} title="Chia sẻ dữ liệu và bên xử lý">
@@ -56,6 +61,7 @@ export default function PrivacyPage() {
           <li><b>Upstash:</b> cơ sở dữ liệu lưu thông tin đơn hàng.</li>
           <li><b>Lark:</b> nhận thông báo nội bộ về đơn đã thanh toán (gồm thông tin đặt hàng của bạn) để đội ngũ xử lý.</li>
           <li><b>GitHub:</b> tên tài khoản của bạn được dùng để mời vào repo.</li>
+          <li><b>Google và Meta:</b> nhận dữ liệu đo lường nêu tại mục 5.</li>
           <li>Đối tác tư vấn, kiểm toán, pháp lý hoặc cơ quan nhà nước khi có căn cứ hợp pháp.</li>
         </Ul>
         <p>Một số nhà cung cấp có thể xử lý dữ liệu ngoài Việt Nam; khi đó dữ liệu có thể được truyền và xử lý xuyên biên giới theo cơ chế pháp lý áp dụng.</p>

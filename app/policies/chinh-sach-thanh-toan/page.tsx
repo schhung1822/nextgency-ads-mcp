@@ -35,7 +35,7 @@ export default function PaymentPolicyPage() {
         <Ul>
           <li>Mỗi đơn có một mã tham chiếu riêng. Đơn chưa thanh toán được giữ trong tối đa <b>{LEGAL.orderValidDays} ngày</b>; sau thời gian này mã đơn hết hiệu lực và bạn cần tạo đơn mới.</li>
           <li>Khi hệ thống nhận đủ số tiền và nhận diện đúng mã đơn, đơn được xác nhận “Đã thanh toán”, cửa sổ thanh toán báo thành công và chúng tôi nhận thông báo để xử lý.</li>
-          <li>Sau khi đơn được xác nhận, hệ thống sẽ gửi lời mời vào repo tới tài khoản GitHub bạn đã khai báo (tự động hoặc do chúng tôi mời thủ công trong giờ làm việc — {LEGAL.workHours}). Bạn cần chấp nhận lời mời trên GitHub (hết hạn sau 7 ngày) và đặt lịch hỗ trợ setup theo hướng dẫn trên màn hình thanh toán.</li>
+          <li>Sau khi đơn được xác nhận, nhân viên Nextgency sẽ liên hệ bạn qua Zalo (số điện thoại bạn đã đăng ký) để hỗ trợ setup. Nếu bạn đã khai báo tài khoản GitHub, hệ thống sẽ gửi lời mời vào repo tới tài khoản đó (tự động hoặc do chúng tôi mời thủ công trong giờ làm việc — {LEGAL.workHours}) và bạn cần chấp nhận lời mời trên GitHub (hết hạn sau 7 ngày). Nếu bạn chưa có hoặc chưa khai báo tài khoản GitHub, chúng tôi sẽ hướng dẫn bạn tạo tài khoản và cấp quyền khi liên hệ. Cần hỗ trợ thêm, bạn có thể nhắn tin fanpage Nextgency.</li>
           <li>Thời gian hiển thị chỉ là ước tính; ngân hàng, đơn vị đối soát, mạng hoặc bảo trì có thể gây chậm.</li>
           <li>Quyền truy cập chỉ phát sinh khi đơn đã được xác nhận thanh toán và chúng tôi đã cấp quyền trên GitHub.</li>
         </Ul>

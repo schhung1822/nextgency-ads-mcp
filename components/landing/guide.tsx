@@ -12,7 +12,7 @@ import { Reveal } from "@/components/landing/reveal";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HAS_AFFILIATE, RESOURCES, type Resource } from "@/lib/resources";
-import { LEGAL } from "@/lib/site";
+import { LEGAL, SITE } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 function Steps({ items }: { items: React.ReactNode[] }) {
@@ -124,11 +124,11 @@ export function Guide() {
               <TabsContent value="order" className="grid gap-6">
                 <Steps
                   items={[
-                    <>Bấm <b>Mua ngay</b>, điền họ tên, số điện thoại/Zalo, email và <b>tên tài khoản GitHub</b> (username, không phải email). Repo sẽ được mời đúng vào tài khoản này.</>,
+                    <>Bấm <b>Mua ngay</b>, điền họ tên, số điện thoại/Zalo và email. Ô <b>tài khoản GitHub</b> là <b>không bắt buộc</b>: nếu đã có, điền username (không phải email) để được mời vào repo ngay; chưa có hoặc không rành thì cứ để trống, Nextgency sẽ hỗ trợ.</>,
                     <>Tích xác nhận đã đọc Điều khoản sử dụng và Chính sách thanh toán &amp; hoàn tiền, rồi bấm <b>Tiếp tục thanh toán</b>.</>,
                     <>Quét mã QR bằng app ngân hàng. Số tiền và nội dung chuyển khoản (mã đơn) đã được điền sẵn — <b>đừng sửa nội dung</b>.</>,
                     <>Hệ thống tự xác nhận khi nhận được tiền và báo <b>Thanh toán thành công</b>. Hãy giữ lại mã đơn.</>,
-                    <>Hệ thống tự động gửi lời mời vào repo cho tài khoản GitHub của bạn (hãy chấp nhận lời mời trong email/thông báo GitHub). Màn hình thành công có checklist chuẩn bị; tích đủ là mở được lịch để bạn tự chọn khung giờ hỗ trợ setup ({LEGAL.workHours}).</>,
+                    <>Màn hình thành công báo <b>nhân viên Nextgency sẽ liên hệ hỗ trợ bạn qua Zalo</b> (số bạn đã đăng ký) trong giờ làm việc ({LEGAL.workHours}). Nếu bạn đã điền GitHub, lời mời vào repo được gửi tự động — hãy chấp nhận trong email/thông báo GitHub. Cần hỗ trợ thêm? Nhắn tin <a href={SITE.contact.fanpage} target="_blank" rel="noopener noreferrer" className="font-semibold text-iris underline underline-offset-4">fanpage Nextgency</a>.</>,
                   ]}
                 />
                 <Tip>
@@ -137,11 +137,12 @@ export function Guide() {
               </TabsContent>
 
               <TabsContent value="github" className="grid gap-6">
+                <Tip>Bạn <b>không cần</b> có sẵn tài khoản GitHub khi đặt hàng. Nếu chưa có hoặc không rành, nhân viên Nextgency sẽ hướng dẫn tạo tài khoản khi liên hệ qua Zalo.</Tip>
                 <Steps
                   items={[
                     <>Tạo tài khoản GitHub (miễn phí) và xác minh email.</>,
                     <>Khuyến nghị <b>tạo tài khoản riêng cho máy chủ</b> (ví dụ <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">congty-ads-server</code>). Token loại classic cần quyền <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">repo</code> — quyền này đọc/ghi mọi repo của chính tài khoản đó, nên đừng dùng tài khoản đang chứa dự án quan trọng.</>,
-                    <>Khai báo đúng tên tài khoản này khi đặt hàng, rồi chấp nhận lời mời vào repo khi nhận được.</>,
+                    <>Khai báo đúng tên tài khoản này khi đặt hàng (hoặc báo cho nhân viên khi được liên hệ), rồi chấp nhận lời mời vào repo khi nhận được.</>,
                     <>Tạo 1 token (Tokens classic): tích <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">repo</code> và <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">read:packages</code>, chọn hạn 1 năm, bấm Generate rồi <b>sao chép ngay</b> (GitHub chỉ hiện một lần).</>,
                   ]}
                 />

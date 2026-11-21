@@ -56,6 +56,10 @@ export async function lookupGithubUser(username: string): Promise<GithubUser> {
 /** Mời `username` vào repo với quyền đọc (pull). Không bao giờ throw — luôn trả kết quả để ghi vào Lark. */
 export async function inviteToRepo(username: string): Promise<InviteResult> {
   const at = new Date().toISOString();
+  // Khách không điền GitHub (không bắt buộc) → không có ai để mời; nhân viên sẽ hỗ trợ qua Zalo.
+  if (!username) {
+    return { status: "skipped", message: "Khách chưa cung cấp tài khoản GitHub", at };
+  }
   if (!githubConfigured) {
     return { status: "skipped", message: "Chưa cấu hình GITHUB_TOKEN / GITHUB_REPO", at };
   }

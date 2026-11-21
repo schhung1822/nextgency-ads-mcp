@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, Geist_Mono, Hubot_Sans } from "next/font/google";
+import { AnalyticsNoscript, AnalyticsScripts } from "@/components/analytics/analytics";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE, formatVnd } from "@/lib/site";
 import "./globals.css";
@@ -37,8 +38,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="vi" className={`${hubot.variable} ${archivo.variable} ${mono.variable}`}>
       <body className="min-h-dvh">
+        <AnalyticsNoscript />
         {children}
         <Toaster position="top-center" />
+        <AnalyticsScripts />
       </body>
     </html>
   );

@@ -45,7 +45,7 @@ export default function TermsPage() {
 
       <Sec n={4} title="Đặt hàng, tài khoản GitHub và thông tin cung cấp">
         <Ul>
-          <li>Bạn phải cung cấp đúng họ tên, số điện thoại, email và tên tài khoản GitHub của mình khi đặt hàng. Quyền truy cập repo được cấp cho đúng tài khoản GitHub bạn khai báo; cung cấp sai thông tin có thể làm chậm hoặc không thể cấp quyền.</li>
+          <li>Bạn phải cung cấp đúng họ tên, số điện thoại (Zalo) và email của mình khi đặt hàng. Tên tài khoản GitHub là không bắt buộc khi đặt hàng; nếu bạn khai báo hoặc cung cấp cho chúng tôi khi được liên hệ hỗ trợ, quyền truy cập repo được cấp cho đúng tài khoản đó. Cung cấp sai thông tin có thể làm chậm hoặc không thể cấp quyền.</li>
           <li>Bạn phải chấp nhận lời mời vào repo trên GitHub để nhận quyền truy cập.</li>
           <li>Bạn tự chịu trách nhiệm bảo mật tài khoản GitHub, token truy cập (Personal Access Token), VPS, tài khoản quảng cáo và mọi thông tin đăng nhập của mình. Không gửi mật khẩu, mã OTP hoặc token đầy đủ qua chat/email.</li>
           <li>Khuyến nghị dùng một tài khoản GitHub riêng cho máy chủ để hạn chế rủi ro cho các kho khác của bạn.</li>

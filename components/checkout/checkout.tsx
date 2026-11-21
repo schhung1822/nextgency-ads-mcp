@@ -4,12 +4,11 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
-  CalendarCheckIcon,
   CopyIcon,
   ExternalLinkIcon,
-  GitBranchIcon,
   Loader2Icon,
   LockIcon,
+  MessageCircleIcon,
   ShieldCheckIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,11 +26,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Vnd } from "@/components/landing/vnd";
+import { getMetaBrowserIds, trackPurchaseComplete, trackRegistrationComplete } from "@/lib/analytics-client";
 import { orderInputSchema } from "@/lib/order-schema";
-import { SITE, formatVnd } from "@/lib/site";
+import { LEGAL, SITE, formatVnd } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 type PaymentInfo = { bank: string; accountNumber: string; accountName: string; qrUrl: string };
-type Pending = { code: string; amount: number; payment: PaymentInfo; tracking: boolean; github?: string };
+// github = "" khi khách không điền (không bắt buộc). phone dùng để nhắc khách "sẽ liên hệ qua Zalo số này".
+type Pending = { code: string; amount: number; payment: PaymentInfo; tracking: boolean; github?: string; phone?: string };
 type PayStatus = "pending" | "paid" | "underpaid";
 type InviteState = "invited" | "already" | "error" | "skipped" | null;
 type GhUser = { status: "ok"; login: string; name: string | null; avatar: string };
@@ -87,6 +89,30 @@ export function BuyStarButton({ children, className }: { children: React.ReactNo
   );
 }
 
+/** Nút CTA trên header: gọn, viền sao chạy + ánh sáng nền, đồng bộ với các nút CTA ở hero. */
+export function BuyHeaderButton({ children, className }: { children: React.ReactNode; className?: string }) {
+  const { open } = useContext(Ctx);
+  return (
+    <StarBorder
+      type="button"
+      onClick={open}
+      color="#9ed6ff"
+      trailColor="#c08dfe"
+      radius={999}
+      duration={4}
+      thickness={1.5}
+      backgroundColor="linear-gradient(90deg,#24388e,#5e5cf0 55%,#8f5bff)"
+      textColor="#ffffff"
+      className={cn(
+        "group gap-1.5! px-4! py-2! text-sm font-semibold shadow-[0_6px_24px_-6px_rgba(109,101,255,0.85)] transition-[transform,box-shadow] duration-200 hover:-translate-y-px hover:shadow-[0_10px_30px_-6px_rgba(143,91,255,0.95)] active:translate-y-0 sm:px-5!",
+        className,
+      )}
+    >
+      {children}
+    </StarBorder>
+  );
+}
+
 function readSaved(): Pending | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -129,7 +155,10 @@ function CheckoutDialog({
         if (!res.ok) return;
         const data = (await res.json()) as { status: PayStatus; invite?: InviteState };
         if (stopped) return;
-        if (data.status === "paid") writeSaved(null);
+        if (data.status === "paid") {
+          writeSaved(null);
+          trackPurchaseComplete(pending.code, pending.amount); // hoàn tất thanh toán (tự chống gửi lặp)
+        }
         setInvite(data.invite ?? null);
         setStatus(data.status);
       } catch {
@@ -156,7 +185,13 @@ function CheckoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] overflow-y-auto p-5 sm:max-w-xl sm:p-6">
+      <DialogContent
+        className={cn(
+          "max-h-[94dvh] gap-5 overflow-y-auto p-5 sm:p-8",
+          // Bước QR thanh toán rộng nhất để mã QR đủ lớn, dễ quét.
+          !pending || status === "paid" ? "sm:max-w-2xl" : "sm:max-w-4xl",
+        )}
+      >
         {!pending ? (
           <OrderForm
             onCreated={(p) => {
@@ -166,7 +201,7 @@ function CheckoutDialog({
             }}
           />
         ) : status === "paid" ? (
-          <PaidView code={pending.code} invite={invite} github={pending.github} onClose={() => { onOpenChange(false); reset(); }} />
+          <PaidView code={pending.code} invite={invite} github={pending.github} phone={pending.phone} onClose={() => { onOpenChange(false); reset(); }} />
         ) : (
           <PayView pending={pending} status={status} onBack={reset} />
         )}
@@ -197,8 +232,9 @@ function OrderForm({ onCreated }: { onCreated: (p: Pending) => void }) {
     setErrors({});
     setSubmitting(true);
     try {
-      // Bước xác nhận: hiện avatar để khách chắc chắn đúng tài khoản GitHub sẽ nhận quyền vào repo.
-      if (!ghUser || ghUser.login.toLowerCase() !== parsed.data.github.toLowerCase()) {
+      // GitHub không bắt buộc: để trống thì bỏ qua bước kiểm tra/xác nhận avatar.
+      // Có điền thì hiện avatar để khách chắc chắn đúng tài khoản sẽ nhận quyền vào repo.
+      if (parsed.data.github && (!ghUser || ghUser.login.toLowerCase() !== parsed.data.github.toLowerCase())) {
         const chk = await fetch(`/api/github/check?u=${encodeURIComponent(parsed.data.github)}`, { cache: "no-store" })
           .then((r) => r.json() as Promise<{ status: string } & Partial<GhUser>>)
           .catch(() => ({ status: "unavailable" }));
@@ -215,7 +251,8 @@ function OrderForm({ onCreated }: { onCreated: (p: Pending) => void }) {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(raw),
+        // tracking: _fbp/_fbc của Meta Pixel để máy chủ báo Purchase qua Conversions API đúng người xem quảng cáo
+        body: JSON.stringify({ ...raw, tracking: getMetaBrowserIds() }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -223,7 +260,8 @@ function OrderForm({ onCreated }: { onCreated: (p: Pending) => void }) {
         toast.error(data.error ?? "Không tạo được đơn hàng. Vui lòng thử lại.");
         return;
       }
-      onCreated({ ...(data as Pending), github: String(parsed.data.github) });
+      trackRegistrationComplete((data as Pending).code); // hoàn tất đăng ký (đơn đã tạo, chờ thanh toán)
+      onCreated({ ...(data as Pending), github: parsed.data.github, phone: parsed.data.phone });
     } catch {
       toast.error("Lỗi kết nối. Vui lòng kiểm tra mạng và thử lại.");
     } finally {
@@ -243,23 +281,23 @@ function OrderForm({ onCreated }: { onCreated: (p: Pending) => void }) {
 
       <form onSubmit={onSubmit} noValidate className="grid gap-4">
         <Field id="name" label="Họ và tên" error={errors.name}>
-          <Input id="name" name="name" autoComplete="name" placeholder="Nguyễn Văn A" aria-invalid={!!errors.name} className="h-10" />
+          <Input id="name" name="name" autoComplete="name" placeholder="Nguyễn Văn A" aria-invalid={!!errors.name} className="h-11" />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field id="phone" label="Số điện thoại / Zalo" error={errors.phone}>
-            <Input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="0901234567" aria-invalid={!!errors.phone} className="h-10" />
+        <div className="grid items-start gap-4 sm:grid-cols-2">
+          <Field id="phone" label="Số điện thoại / Zalo" hint="Nextgency sẽ liên hệ hỗ trợ bạn qua Zalo số này." error={errors.phone}>
+            <Input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="0901234567" aria-invalid={!!errors.phone} className="h-11" />
           </Field>
           <Field id="email" label="Email" error={errors.email}>
-            <Input id="email" name="email" type="email" autoComplete="email" placeholder="ban@congty.vn" aria-invalid={!!errors.email} className="h-10" />
+            <Input id="email" name="email" type="email" autoComplete="email" placeholder="ban@congty.vn" aria-invalid={!!errors.email} className="h-11" />
           </Field>
         </div>
         <Field
           id="github"
-          label="Tài khoản GitHub"
-          hint="Dùng để mời bạn vào repo riêng chứa bộ cài. Chưa có? Đăng ký miễn phí tại github.com."
+          label="Tài khoản GitHub (không bắt buộc)"
+          hint="Không rành kỹ thuật? Cứ để trống — Nextgency sẽ hướng dẫn và hỗ trợ bạn sau khi thanh toán. Nếu đã có tài khoản, điền username để được mời vào repo ngay."
           error={errors.github}
         >
-          <Input id="github" name="github" autoComplete="off" placeholder="username-github" aria-invalid={!!errors.github} className="h-10" onChange={() => setGhUser(null)} />
+          <Input id="github" name="github" autoComplete="off" placeholder="username-github" aria-invalid={!!errors.github} className="h-11" onChange={() => setGhUser(null)} />
         </Field>
         {ghUser && (
           <div role="status" className="flex items-center gap-3 rounded-xl border border-iris/30 bg-secondary/60 p-3">
@@ -274,7 +312,7 @@ function OrderForm({ onCreated }: { onCreated: (p: Pending) => void }) {
           </div>
         )}
         <Field id="note" label="Ghi chú (không bắt buộc)" error={errors.note}>
-          <Textarea id="note" name="note" rows={2} placeholder="VD: đã có VPS chưa, chạy nền tảng nào, thời gian tiện để setup…" className="min-h-16" />
+          <Textarea id="note" name="note" rows={2} placeholder="VD: đã có VPS chưa, chạy nền tảng nào, thời gian tiện để setup…" className="min-h-20" />
         </Field>
 
         <div className="grid gap-1.5">
@@ -296,7 +334,7 @@ function OrderForm({ onCreated }: { onCreated: (p: Pending) => void }) {
           <input id="website" name="website" tabIndex={-1} autoComplete="off" />
         </div>
 
-        <Button type="submit" size="lg" disabled={submitting} className="bg-brand-button h-11 w-full border-0 text-base font-semibold text-white hover:opacity-90">
+        <Button type="submit" size="lg" disabled={submitting} className="bg-brand-button h-12 w-full border-0 text-base font-semibold text-white hover:opacity-90">
           {submitting ? <Loader2Icon className="animate-spin" /> : <LockIcon />}
           {submitting ? "Đang xử lý…" : ghUser ? <>Đúng tài khoản của tôi · Tiếp tục thanh toán</> : <>Tiếp tục thanh toán · <Vnd amount={SITE.price} /></>}
         </Button>
@@ -341,39 +379,47 @@ function PayView({ pending, status, onBack }: { pending: Pending; status: PaySta
   const { code, amount, payment, tracking } = pending;
   return (
     <>
-      <DialogHeader>
-        <DialogTitle className="text-xl font-semibold">Quét mã QR để thanh toán</DialogTitle>
-        <DialogDescription className="text-sm">
+      <DialogHeader className="gap-2 pr-8">
+        <DialogTitle className="text-2xl font-semibold">Quét mã QR để thanh toán</DialogTitle>
+        <DialogDescription className="text-base leading-relaxed">
           Mở app ngân hàng → quét mã. Số tiền và nội dung đã được điền sẵn — <strong className="text-foreground">đừng sửa nội dung chuyển khoản</strong> để hệ thống nhận diện đúng đơn.
         </DialogDescription>
       </DialogHeader>
 
-      <div className="grid gap-5 sm:grid-cols-[220px_1fr]">
-        <div className="mx-auto w-full max-w-[220px] rounded-2xl border bg-white p-2 shadow-sm">
+      <div className="grid items-start gap-6 sm:grid-cols-[minmax(0,340px)_minmax(0,1fr)] sm:gap-8">
+        <div className="mx-auto w-full max-w-85 rounded-3xl border bg-white p-3 shadow-md shadow-iris/10 ring-1 ring-iris/10">
           {/* eslint-disable-next-line @next/next/no-img-element -- QR động từ qr.sepay.vn */}
           <img src={payment.qrUrl} alt={`Mã QR thanh toán đơn ${code}`} width={400} height={400} className="aspect-square w-full" />
         </div>
 
-        <dl className="grid content-start gap-3 text-sm">
-          <Row label="Ngân hàng" value={payment.bank} />
-          <Row label="Số tài khoản" value={payment.accountNumber} copy />
-          <Row label="Chủ tài khoản" value={payment.accountName} />
-          <Row label="Số tiền" value={formatVnd(amount)} copyValue={String(amount)} emphasis />
-          <Row label="Nội dung CK" value={code} copy emphasis />
-        </dl>
+        <div className="grid content-start gap-4">
+          <div className="rounded-2xl bg-secondary/70 p-4 text-center sm:text-left">
+            <p className="text-sm text-muted-foreground">Số tiền cần chuyển</p>
+            <p className="mt-0.5 flex items-center justify-center gap-1.5 sm:justify-start">
+              <span className="font-mono text-3xl font-bold tracking-tight text-navy">{formatVnd(amount)}</span>
+              <CopyButton label="số tiền" text={String(amount)} />
+            </p>
+          </div>
+          <dl className="grid content-start gap-3.5 text-base">
+            <Row label="Ngân hàng" value={payment.bank} />
+            <Row label="Số tài khoản" value={payment.accountNumber} copy />
+            <Row label="Chủ tài khoản" value={payment.accountName} />
+            <Row label="Nội dung CK" value={code} copy emphasis />
+          </dl>
+        </div>
       </div>
 
       {status === "underpaid" && (
-        <div role="status" className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+        <div role="status" className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-sm text-amber-900">
           <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" />
           Hệ thống đã nhận một khoản nhưng chưa đủ <Vnd amount={amount} />. Vui lòng chuyển bù phần còn thiếu với cùng nội dung <strong>{code}</strong>, hoặc liên hệ Nextgency.
         </div>
       )}
 
-      <div role="status" aria-live="polite" className="flex items-center gap-2 rounded-lg bg-secondary p-3 text-sm text-secondary-foreground">
+      <div role="status" aria-live="polite" className="flex items-center gap-2.5 rounded-xl bg-secondary p-3.5 text-sm text-secondary-foreground sm:text-base">
         {tracking ? (
           <>
-            <Loader2Icon className="size-4 shrink-0 animate-spin text-iris" />
+            <Loader2Icon className="size-5 shrink-0 animate-spin text-iris" />
             Đang chờ thanh toán… trang sẽ tự cập nhật ngay khi nhận được tiền.
           </>
         ) : (
@@ -381,7 +427,7 @@ function PayView({ pending, status, onBack }: { pending: Pending; status: PaySta
         )}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>Mã đơn: <span className="font-mono text-foreground">{code}</span></span>
         <button type="button" onClick={onBack} className="underline underline-offset-4 hover:text-foreground">
           Nhập lại thông tin
@@ -391,39 +437,41 @@ function PayView({ pending, status, onBack }: { pending: Pending; status: PaySta
   );
 }
 
-function Row({
-  label,
-  value,
-  copy,
-  copyValue,
-  emphasis,
-}: {
-  label: string;
-  value: string;
-  copy?: boolean;
-  copyValue?: string;
-  emphasis?: boolean;
-}) {
+function CopyButton({ label, text }: { label: string; text: string }) {
   const doCopy = async () => {
     try {
-      await navigator.clipboard.writeText(copyValue ?? value);
-      toast.success(`Đã sao chép ${label.toLowerCase()}`);
+      await navigator.clipboard.writeText(text);
+      toast.success(`Đã sao chép ${label}`);
     } catch {
       toast.error("Không sao chép được — hãy chọn và copy thủ công.");
     }
   };
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-dashed pb-2 last:border-0">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="flex items-center gap-1.5 text-right">
-        <span className={emphasis ? "font-mono text-base font-semibold text-foreground" : "font-medium text-foreground"}>
+    <Button type="button" variant="ghost" size="icon-sm" onClick={doCopy} aria-label={`Sao chép ${label}`}>
+      <CopyIcon />
+    </Button>
+  );
+}
+
+function Row({
+  label,
+  value,
+  copy,
+  emphasis,
+}: {
+  label: string;
+  value: string;
+  copy?: boolean;
+  emphasis?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-dashed pb-2.5 last:border-0">
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
+      <dd className="flex min-w-0 items-center gap-1 text-right">
+        <span className={cn("wrap-break-word", emphasis ? "font-mono text-lg font-bold text-iris" : "font-semibold text-foreground")}>
           {value || "—"}
         </span>
-        {(copy || copyValue) && value && (
-          <Button type="button" variant="ghost" size="icon-xs" onClick={doCopy} aria-label={`Sao chép ${label.toLowerCase()}`}>
-            <CopyIcon />
-          </Button>
-        )}
+        {copy && value && <CopyButton label={label.toLowerCase()} text={value} />}
       </dd>
     </div>
   );
@@ -435,128 +483,122 @@ function PaidView({
   code,
   invite,
   github,
+  phone,
   onClose,
 }: {
   code: string;
   invite: InviteState;
   github?: string;
+  phone?: string;
   onClose: () => void;
 }) {
-  const [done, setDone] = useState<Record<string, boolean>>({});
-  const inviting = invite === null; // đang chạy các bước hậu thanh toán (vài giây)
+  // GitHub không bắt buộc: khách không điền thì chỉ báo "sẽ được hướng dẫn khi liên hệ".
+  const hasGithub = Boolean(github);
+  const inviting = hasGithub && invite === null; // đang chạy các bước hậu thanh toán (vài giây)
   const manual = invite === "error" || invite === "skipped";
-
-  const steps = [
-    {
-      id: "github",
-      title: manual ? "Chờ Nextgency mời tài khoản GitHub của bạn" : "Chấp nhận lời mời vào repo trên GitHub",
-      body: inviting
-        ? `Đang gửi lời mời tới ${github ? "@" + github : "tài khoản GitHub của bạn"}… vài giây nữa bạn sẽ thấy xác nhận.`
-        : manual
-        ? `Chúng tôi sẽ mời ${github ? "@" + github : "tài khoản GitHub của bạn"} vào repo trong giờ làm việc. Bạn sẽ nhận email từ GitHub — bấm Accept khi nhận được.`
-        : invite === "already"
-          ? "Tài khoản của bạn đã có quyền truy cập repo — không cần làm gì thêm."
-          : `Lời mời đã được gửi tới ${github ? "@" + github : "tài khoản GitHub của bạn"}. Mở email từ GitHub hoặc trang thông báo rồi bấm Accept (lời mời hết hạn sau 7 ngày).`,
-      link: { href: "https://github.com/notifications", label: "Mở thông báo GitHub" },
-    },
-    {
-      id: "infra",
-      title: "Chuẩn bị VPS và tên miền",
-      body: "VPS Ubuntu 24.04 (tối thiểu 1 vCPU, 2 GB RAM, 20 GB ổ cứng) và 1 tên miền để trỏ về VPS.",
-      link: { href: "#huong-dan", label: "Xem hướng dẫn chuẩn bị", internal: true },
-    },
-    {
-      id: "token",
-      title: "Tạo token GitHub (sau khi đã Accept)",
-      body: "Token classic, tích repo và read:packages, hạn 1 năm. Lưu vào trình quản lý mật khẩu — không gửi cho ai.",
-      link: { href: "https://github.com/settings/tokens/new", label: "Tạo token" },
-    },
-  ];
-  const allDone = steps.every((st) => done[st.id]);
+  const account = `@${github}`;
 
   return (
-    <div className="grid gap-5">
-      <div className="grid justify-items-center gap-3 text-center">
+    <div className="grid gap-4">
+      <div className="grid justify-items-center gap-2.5 text-center">
         <span className="grid size-14 place-items-center rounded-full bg-emerald-100 text-emerald-600">
           <CheckCircle2Icon className="size-8" />
         </span>
-        <DialogHeader className="items-center">
-          <DialogTitle className="text-2xl font-semibold">Thanh toán thành công!</DialogTitle>
-          <DialogDescription className="max-w-md text-sm">
-            Đơn <strong className="font-mono text-foreground">{code}</strong> đã được xác nhận. Làm theo 3 bước dưới đây để buổi setup diễn ra nhanh nhất.
+        <DialogHeader className="items-center gap-1.5">
+          <DialogTitle className="text-2xl font-semibold sm:text-3xl">Thanh toán thành công!</DialogTitle>
+          <DialogDescription className="text-base">
+            Đơn <strong className="font-mono text-foreground">{code}</strong> đã được xác nhận. Cảm ơn bạn!
           </DialogDescription>
         </DialogHeader>
       </div>
 
-      <ol className="grid gap-2.5">
-        {steps.map((st, i) => (
-          <li key={st.id} className={`rounded-xl border p-3.5 transition-colors ${done[st.id] ? "border-emerald-300 bg-emerald-50/60" : "bg-white"}`}>
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id={`step-${st.id}`}
-                checked={!!done[st.id]}
-                onCheckedChange={(v) => setDone((d) => ({ ...d, [st.id]: v === true }))}
-                className="mt-1"
-              />
-              <div className="min-w-0 text-sm">
-                <Label htmlFor={`step-${st.id}`} className="block cursor-pointer text-[15px] font-semibold text-navy">
-                  {i + 1}. {st.title}
-                </Label>
-                <p className="mt-1 leading-relaxed text-muted-foreground">{st.body}</p>
-                <a
-                  href={st.link.href}
-                  {...(st.link.internal ? { onClick: onClose } : { target: "_blank", rel: "noopener noreferrer" })}
-                  className="mt-1.5 inline-flex items-center gap-1 font-medium text-iris underline underline-offset-4"
-                >
-                  {st.link.label}
-                  {!st.link.internal && <ExternalLinkIcon className="size-3.5" />}
-                </a>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ol>
+      {/* Thông báo chính: sẽ có người liên hệ qua Zalo */}
+      <div className="rounded-2xl border border-iris/25 bg-linear-to-br from-secondary/80 to-white p-5 sm:p-6">
+        <div className="flex items-start gap-4">
+          <span className="bg-brand-button grid size-11 shrink-0 place-items-center rounded-full text-white">
+            <MessageCircleIcon className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-lg font-semibold text-navy">Nextgency sẽ liên hệ hỗ trợ bạn qua Zalo</p>
+            <p className="mt-1.5 leading-relaxed text-muted-foreground">
+              Nhân viên sẽ nhắn tin hoặc gọi cho bạn qua Zalo
+              {phone && (
+                <>
+                  {" "}số <b className="font-mono text-foreground">{phone}</b>
+                </>
+              )}{" "}
+              để hướng dẫn cài đặt từng bước. Bạn chỉ cần để ý tin nhắn Zalo trong giờ làm việc ({LEGAL.workHours}).
+            </p>
+          </div>
+        </div>
+      </div>
 
-      {SITE.bookingUrl ? (
-        <div className="grid gap-2 rounded-xl bg-secondary/70 p-4 text-center">
-          <p className="flex items-center justify-center gap-2 text-sm font-semibold text-navy">
-            <CalendarCheckIcon className="size-4 text-iris" /> Đặt lịch hỗ trợ setup
+      {/* Tình trạng quyền vào repo (chỉ khi khách có điền GitHub) */}
+      {hasGithub ? (
+        <div role="status" aria-live="polite" className="flex items-start gap-3 rounded-xl border bg-white p-3.5 text-sm leading-relaxed">
+          {inviting && <Loader2Icon className="mt-0.5 size-4 shrink-0 animate-spin text-iris" />}
+          <p className="text-muted-foreground">
+            {inviting ? (
+              <>Đang gửi lời mời vào repo tới <b className="text-foreground">{account}</b>… vài giây nữa bạn sẽ thấy xác nhận.</>
+            ) : manual ? (
+              <>Nextgency sẽ mời <b className="text-foreground">{account}</b> vào repo trong giờ làm việc. Bạn sẽ nhận email từ GitHub — bấm <b className="text-foreground">Accept</b> khi nhận được.</>
+            ) : invite === "already" ? (
+              <>Tài khoản <b className="text-foreground">{account}</b> đã có quyền truy cập repo — không cần làm gì thêm.</>
+            ) : (
+              <>
+                Lời mời vào repo đã được gửi tới <b className="text-foreground">{account}</b>. Mở email hoặc{" "}
+                <a href="https://github.com/notifications" target="_blank" rel="noopener noreferrer" className="font-medium text-iris underline underline-offset-4">trang thông báo GitHub</a>{" "}
+                rồi bấm <b className="text-foreground">Accept</b> (lời mời hết hạn sau 7 ngày).
+              </>
+            )}
           </p>
-          {allDone ? (
-            <a
-              href={SITE.bookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-brand-button inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-base font-semibold text-white hover:opacity-90"
-            >
-              Chọn khung giờ <ExternalLinkIcon className="size-4" />
-            </a>
-          ) : (
-            <>
-              <button type="button" disabled className="inline-flex h-11 cursor-not-allowed items-center justify-center rounded-full bg-muted px-6 text-base font-semibold text-muted-foreground">
-                Chọn khung giờ
-              </button>
-              <p className="text-xs text-muted-foreground">Tích đủ 3 mục ở trên để mở lịch — buổi setup sẽ diễn ra nhanh hơn khi bạn đã chuẩn bị xong.</p>
-            </>
-          )}
         </div>
       ) : (
-        <p className="rounded-xl bg-secondary/70 p-4 text-center text-sm text-secondary-foreground">
-          Nextgency sẽ liên hệ bạn sớm để hẹn lịch hỗ trợ setup.
+        <p className="rounded-xl border bg-white p-3.5 text-sm leading-relaxed text-muted-foreground">
+          Bạn chưa có tài khoản GitHub? Không sao — nhân viên sẽ hướng dẫn bạn tạo tài khoản và cấp quyền truy cập khi liên hệ.
         </p>
       )}
 
-      <p className="text-center text-xs text-muted-foreground">
-        <GitBranchIcon className="mr-1 inline size-3.5" />
-        Hãy lưu lại mã đơn <b className="font-mono">{code}</b>
-        {(SITE.contact.zalo || SITE.contact.email) && (
+      {/* Cần hỗ trợ thêm → fanpage */}
+      <div className="grid gap-3 rounded-2xl border bg-white p-4 sm:flex sm:items-center sm:justify-between sm:gap-6">
+        <div>
+          <p className="font-semibold text-navy">Cần hỗ trợ thêm?</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">Nhắn tin trực tiếp cho Nextgency qua fanpage.</p>
+        </div>
+        <a
+          href={SITE.contact.fanpage}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-brand-button inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-semibold text-white hover:opacity-90"
+        >
+          Nhắn tin fanpage Nextgency <ExternalLinkIcon className="size-4" />
+        </a>
+      </div>
+
+      <p className="text-center text-sm text-muted-foreground">
+        Muốn chuẩn bị trước cho buổi cài đặt?{" "}
+        <a href="#huong-dan" onClick={onClose} className="font-medium text-iris underline underline-offset-4">
+          Xem hướng dẫn chuẩn bị VPS &amp; tên miền
+        </a>{" "}
+        (không bắt buộc).
+        {SITE.bookingUrl && (
           <>
-            {" "}· Cần gấp? {SITE.contact.zalo && <>Zalo <b>{SITE.contact.zalo}</b></>}
-            {SITE.contact.zalo && SITE.contact.email && " · "}
-            {SITE.contact.email && <b>{SITE.contact.email}</b>}
+            {" "}Hoặc{" "}
+            <a href={SITE.bookingUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-iris underline underline-offset-4">
+              tự chọn lịch hỗ trợ setup
+            </a>
+            .
           </>
         )}
       </p>
+
+      {(SITE.contact.zalo || SITE.contact.email) && (
+        <p className="text-center text-xs text-muted-foreground">
+          Cần gấp? {SITE.contact.zalo && <>Zalo <b>{SITE.contact.zalo}</b></>}
+          {SITE.contact.zalo && SITE.contact.email && " · "}
+          {SITE.contact.email && <b>{SITE.contact.email}</b>}
+        </p>
+      )}
       <Button type="button" variant="outline" onClick={onClose} className="mx-auto h-10 px-6">Đóng</Button>
     </div>
   );

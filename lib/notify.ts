@@ -12,7 +12,7 @@ function customerFields(order: Order): LarkField[] {
     { label: "Khách hàng", value: order.name },
     { label: "Số điện thoại", value: order.phone },
     { label: "Email", value: order.email },
-    { label: "GitHub (mời vào repo)", value: order.github },
+    { label: "GitHub (mời vào repo)", value: order.github || "— (khách chưa cung cấp)" },
     ...(order.note ? [{ label: "Ghi chú", value: order.note, short: false }] : []),
   ];
 }
@@ -26,7 +26,10 @@ export type PaidTx = {
   time?: string;
 };
 
-function inviteField(invite?: InviteResult): LarkField {
+function inviteField(invite: InviteResult | undefined, hasGithub: boolean): LarkField {
+  if (!hasGithub) {
+    return { label: "Mời GitHub", value: "⏭️ Khách chưa có/không điền GitHub — hướng dẫn tạo tài khoản rồi mời sau", short: false };
+  }
   switch (invite?.status) {
     case "invited":
       return { label: "Mời GitHub", value: "✅ Đã gửi lời mời (quyền đọc) — chờ khách Accept" };
@@ -41,15 +44,20 @@ function inviteField(invite?: InviteResult): LarkField {
 
 /** Đã nhận đủ tiền. Trả về lỗi nếu gửi Lark thất bại để webhook báo SePay gọi lại. */
 export async function notifyPaid(order: Order, tx?: PaidTx, extra?: string) {
-  const needManual = order.invite?.status === "error" || order.invite?.status === "skipped" || !order.invite;
+  const hasGithub = Boolean(order.github);
+  const needManual = hasGithub && (order.invite?.status === "error" || order.invite?.status === "skipped" || !order.invite);
   return sendLarkCard({
-    title: needManual ? "✅ Thanh toán thành công — CẦN MỜI GITHUB TAY" : "✅ Thanh toán thành công — Ads MCP Simple",
-    tone: needManual ? "orange" : "green",
+    title: !hasGithub
+      ? "✅ Thanh toán thành công — LIÊN HỆ KHÁCH QUA ZALO (chưa có GitHub)"
+      : needManual
+        ? "✅ Thanh toán thành công — CẦN MỜI GITHUB TAY"
+        : "✅ Thanh toán thành công — Ads MCP Simple",
+    tone: needManual || !hasGithub ? "orange" : "green",
     fields: [
       { label: "Mã đơn", value: order.code },
       { label: "Đã nhận", value: formatVnd(order.paidAmount || order.amount) },
       ...customerFields(order),
-      inviteField(order.invite),
+      inviteField(order.invite, hasGithub),
       ...(order.paidVia === "manual" || !tx
         ? [
             { label: "Hình thức", value: "🛠️ Admin xác nhận thủ công" },
@@ -67,9 +75,11 @@ export async function notifyPaid(order: Order, tx?: PaidTx, extra?: string) {
     ],
     footer:
       extra ??
-      (needManual
-        ? "Việc cần làm: mời tài khoản GitHub của khách vào repo (quyền Read), rồi liên hệ khách."
-        : "Khách đã được gửi hướng dẫn chuẩn bị và link đặt lịch setup trên màn hình thanh toán."),
+      (!hasGithub
+        ? `Khách đã được thông báo sẽ có người liên hệ qua Zalo (${order.phone}). Việc cần làm: liên hệ khách, hướng dẫn tạo tài khoản GitHub rồi mời vào repo (quyền Read) và hẹn lịch setup.`
+        : needManual
+          ? `Việc cần làm: mời tài khoản GitHub của khách vào repo (quyền Read), rồi liên hệ khách qua Zalo (${order.phone}).`
+          : `Khách đã được thông báo sẽ có người liên hệ qua Zalo (${order.phone}) — hãy liên hệ khách để hẹn lịch setup.`),
   });
 }
 

@@ -4,10 +4,11 @@ Next.js 16 (App Router) + shadcn/ui (base-nova) + Tailwind 4. Thanh toán chuy�
 
 ## Luồng
 
-1. Khách bấm **Mua ngay** → điền họ tên, SĐT, email, tài khoản GitHub → `POST /api/orders`.
+1. Khách bấm **Mua ngay** → điền họ tên, SĐT/Zalo, email (tài khoản GitHub **không bắt buộc** — khách không rành kỹ thuật có thể bỏ trống) → `POST /api/orders`.
 2. Server tạo mã đơn (`NGX` + 8 số), lưu đơn vào **MySQL** và trả về mã QR SePay (số tiền + nội dung đã điền sẵn).
 3. Khách chuyển khoản → SePay gọi `POST /api/sepay/webhook` → server đối chiếu mã đơn + số tiền.
-4. Đủ tiền → server **tự mời tài khoản GitHub của khách vào repo (quyền Read)**, đơn chuyển `paid`, gửi thẻ **Lark** (có trạng thái mời; lỗi thì thẻ đổi màu cam "CẦN MỜI GITHUB TAY"). Trang của khách tự chuyển sang màn hình onboarding: 3 việc cần chuẩn bị (Accept lời mời, VPS + tên miền, tạo token) rồi mới mở nút đặt lịch setup.
+4. Đủ tiền → server **tự mời tài khoản GitHub của khách vào repo (quyền Read)**, đơn chuyển `paid`, gửi thẻ **Lark** (có trạng thái mời; lỗi thì thẻ đổi màu cam "CẦN MỜI GITHUB TAY"). Trang của khách tự chuyển sang màn hình "Thanh toán thành công": thông báo **nhân viên sẽ liên hệ hỗ trợ qua Zalo** (số khách đã đăng ký), trạng thái lời mời GitHub (nếu khách có điền), và nút nhắn tin **fanpage Nextgency** khi cần hỗ trợ thêm (`NEXT_PUBLIC_CONTACT_FANPAGE`, mặc định https://web.facebook.com/nextgency).
+   Khách không điền GitHub → bỏ qua bước mời, thẻ Lark màu cam "LIÊN HỆ KHÁCH QUA ZALO (chưa có GitHub)"; cột `orders.github` lưu chuỗi rỗng, webhook `customer.github` là `""` và `githubInvite` là `skipped`.
 5. Thiếu tiền → Lark cảnh báo, khách chuyển bù với cùng nội dung; dư/trùng → Lark cảnh báo để xử lý tay.
 
 Giá lấy từ server ([lib/site.ts](lib/site.ts) → `SITE.price` = 1.999.000₫), client không gửi giá.
@@ -119,6 +120,28 @@ const expected = "sha256=" + crypto.createHmac("sha256", SECRET).update(`${ts}.$
 const ok = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader));
 ```
 
+## Đo lường: Google Tag Manager + Meta Pixel / Conversions API
+
+| Biến | Ghi chú |
+|---|---|
+| `NEXT_PUBLIC_GTM_ID` | Container GTM, mặc định `GTM-55BSJ6HH`. Đặt rỗng = tắt |
+| `NEXT_PUBLIC_META_PIXEL_ID` | ID Dataset/Pixel của Meta. Trống = tắt Pixel + Conversions API |
+| `META_CAPI_ACCESS_TOKEN` | Token Conversions API (bí mật, chỉ phía server). Trống = chỉ chạy Pixel trình duyệt |
+| `META_CAPI_TEST_EVENT_CODE` | (tuỳ chọn) mã tab *Test events* của Events Manager; chạy thật thì để trống |
+
+`NEXT_PUBLIC_*` được nhúng lúc build — thêm/đổi xong phải **deploy lại** trên Vercel.
+Bảng `order_tracking` (trong `db/schema.sql`) lưu `_fbp`, `_fbc`, IP, user-agent lúc tạo đơn; chạy `npm run db:migrate` để tạo (chưa chạy thì vẫn gửi được sự kiện, chỉ thiếu các trường này).
+
+**Hai sự kiện** (gửi cả từ trình duyệt lẫn máy chủ với cùng `event_id` nên Meta tự gộp, không đếm đôi; máy chủ đảm bảo vẫn có sự kiện khi khách đóng trang sau khi chuyển khoản):
+
+| Thời điểm | dataLayer (GTM / GA4) | Meta | `event_id` |
+|---|---|---|---|
+| Hoàn tất đăng ký — đơn vừa được tạo, chờ thanh toán | `complete_registration` | `CompleteRegistration` | `reg_<mã đơn>` |
+| Hoàn tất thanh toán — nhận đủ tiền | `purchase` (chuẩn GA4 ecommerce: `transaction_id`, `value`, `currency`, `items`) | `Purchase` (`value`, `currency` VND) | `purchase_<mã đơn>` |
+
+Trong GTM: tạo trigger kiểu *Custom Event* với tên `complete_registration` và `purchase`, gắn vào tag *GA4 Event* (hoặc tag Google Ads…). Nếu đã đặt `NEXT_PUBLIC_META_PIXEL_ID` thì **đừng** thêm tag Meta Pixel trong GTM (đã được cài trực tiếp trong code).
+Email, SĐT, họ tên gửi cho Meta qua Conversions API đều được băm SHA-256. Nội dung chi tiết đã được ghi trong trang Quyền riêng tư.
+
 ## Chạy local
 ```bash
 npm install
@@ -133,7 +156,9 @@ curl -X POST http://localhost:3000/api/sepay/webhook \
 ```
 
 ## Sau khi khách thanh toán
-- Nếu đã cấu hình `GITHUB_*`: khách được mời tự động. Bạn chỉ cần có mặt đúng buổi setup khách đặt trên lịch.
+- Màn hình của khách báo "sẽ có người liên hệ qua Zalo" → **hãy chủ động nhắn/gọi Zalo cho khách** theo SĐT trong thẻ Lark để hẹn buổi setup.
+- Nếu đã cấu hình `GITHUB_*` và khách có điền GitHub: khách được mời tự động.
+- Khách không điền GitHub: thẻ Lark nhắc hướng dẫn khách tạo tài khoản rồi mời tay vào repo (quyền Read).
 - Thẻ Lark màu **cam** ("CẦN MỜI GITHUB TAY") nghĩa là tự mời lỗi/chưa bật → mời tay tên GitHub trong thẻ (quyền Read).
 - Lúc đặt hàng, tên GitHub được kiểm tra và khách xác nhận bằng avatar để tránh mời nhầm người.
 - Lời mời GitHub hết hạn sau 7 ngày; nếu khách quên Accept, mời lại bằng cách gọi lại webhook hoặc mời tay.

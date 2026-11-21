@@ -2,7 +2,9 @@ import { after, NextResponse } from "next/server";
 import { createOrder, getOrder, isPersistent, rateLimit, type Order } from "@/lib/orders";
 import { orderInputSchema } from "@/lib/order-schema";
 import { buildPaymentInfo, generateOrderCode, isSepayConfigured } from "@/lib/sepay";
+import { reportRegistration } from "@/lib/server-tracking";
 import { SITE } from "@/lib/site";
+import { sanitizeMetaIds } from "@/lib/tracking";
 import { deliverOrderEvent } from "@/lib/webhooks";
 
 const noStore = { "Cache-Control": "no-store" };
@@ -76,6 +78,18 @@ export async function POST(request: Request) {
   after(async () => {
     const created: Order | null = await getOrder(finalCode).catch(() => null);
     if (created) await deliverOrderEvent("created", created);
+  });
+
+  // Hoàn tất đăng ký → báo Meta Conversions API (cùng event_id với Pixel trình duyệt). Ngữ cảnh trình duyệt
+  // được lưu lại để lúc thanh toán (khách có thể đã đóng trang) vẫn báo Purchase đúng người.
+  const trackingCtx = {
+    ...sanitizeMetaIds((body as { tracking?: unknown } | null)?.tracking),
+    ip: ip === "unknown" ? undefined : ip,
+    userAgent: request.headers.get("user-agent") ?? undefined,
+  };
+  after(async () => {
+    const created: Order | null = await getOrder(finalCode).catch(() => null);
+    if (created) await reportRegistration(created, trackingCtx);
   });
 
   return NextResponse.json(

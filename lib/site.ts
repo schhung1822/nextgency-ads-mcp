@@ -17,12 +17,14 @@ export const SITE = {
     zalo: process.env.NEXT_PUBLIC_CONTACT_ZALO ?? "",
     phone: process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "",
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
+    // Fanpage để khách nhắn tin khi cần hỗ trợ thêm.
+    fanpage: process.env.NEXT_PUBLIC_CONTACT_FANPAGE || "https://web.facebook.com/nextgency",
   },
 } as const;
 
 /** Thông tin dùng trong các trang chính sách. Chỉnh cho đúng với thực tế của Nextgency. */
 export const LEGAL = {
-  updated: "20 tháng 11, 2026",
+  updated: "21 tháng 11, 2026",
   operator: process.env.NEXT_PUBLIC_LEGAL_NAME || "Nextgency",
   address: process.env.NEXT_PUBLIC_LEGAL_ADDRESS ?? "",
   taxId: process.env.NEXT_PUBLIC_LEGAL_TAX_ID ?? "",

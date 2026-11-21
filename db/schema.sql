@@ -73,6 +73,18 @@ CREATE TABLE IF NOT EXISTS sepay_transactions (
   KEY idx_order (order_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Ngữ cảnh trình duyệt lúc khách tạo đơn, dùng để báo sự kiện Purchase về Meta (Conversions API)
+-- khi khách đã đóng trang. Chỉ được ghi khi đã cấu hình META_CAPI_ACCESS_TOKEN.
+CREATE TABLE IF NOT EXISTS order_tracking (
+  order_code VARCHAR(20)  NOT NULL,
+  fbp        VARCHAR(120) NULL COMMENT 'Cookie _fbp của Meta Pixel',
+  fbc        VARCHAR(320) NULL COMMENT 'Cookie _fbc / fbclid của Meta',
+  client_ip  VARCHAR(64)  NULL,
+  user_agent VARCHAR(400) NULL,
+  created_at DATETIME     NOT NULL,
+  PRIMARY KEY (order_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Giới hạn tần suất (chống spam tạo đơn)
 CREATE TABLE IF NOT EXISTS rate_limits (
   k   VARCHAR(120) NOT NULL,

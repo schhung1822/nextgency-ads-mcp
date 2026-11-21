@@ -9,6 +9,8 @@ export const orderInputSchema = z.object({
     .transform((v) => v.replace(/[\s.\-()]/g, ""))
     .pipe(z.string().regex(/^(?:\+?84|0)\d{9}$/, "Số điện thoại chưa đúng (VD: 0901234567)")),
   email: z.string().trim().toLowerCase().max(120).pipe(z.email("Email chưa đúng định dạng")),
+  // Không bắt buộc: khách không rành kỹ thuật có thể bỏ trống, Nextgency hỗ trợ tạo/mời sau khi thanh toán.
+  // Để trống => lưu chuỗi rỗng "".
   github: z
     .string()
     .trim()
@@ -16,8 +18,10 @@ export const orderInputSchema = z.object({
     .pipe(
       z
         .string()
-        .regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/, "Tên tài khoản GitHub chưa đúng (VD: nextgency)"),
-    ),
+        .regex(/^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))?$/, "Tên tài khoản GitHub chưa đúng (VD: nextgency) — hoặc để trống nếu bạn chưa có"),
+    )
+    .optional()
+    .default(""),
   note: z.string().trim().max(500, "Ghi chú tối đa 500 ký tự").optional().default(""),
   // Đã đọc & đồng ý Điều khoản + Chính sách thanh toán (bắt buộc)
   consent: z.literal(true, "Vui lòng xác nhận đã đọc và đồng ý để tiếp tục"),

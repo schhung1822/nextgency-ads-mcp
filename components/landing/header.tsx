@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { MenuIcon } from "lucide-react";
-import { BuyButton } from "@/components/checkout/checkout";
+import { ArrowRightIcon, MenuIcon, SparklesIcon } from "lucide-react";
+import { BuyHeaderButton } from "@/components/checkout/checkout";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -47,9 +47,11 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <BuyButton size="lg" className="bg-brand-button h-9 rounded-full border-0 px-4 text-sm font-semibold text-white hover:opacity-90">
+          <BuyHeaderButton>
+            <SparklesIcon className="size-4 text-sky" />
             Mua ngay
-          </BuyButton>
+            <ArrowRightIcon className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </BuyHeaderButton>
           <Sheet>
             <SheetTrigger render={<Button variant="ghost" size="icon-lg" className="text-white hover:bg-white/10 hover:text-white lg:hidden" aria-label="Mở menu" />}>
               <MenuIcon />
