@@ -1,62 +1,73 @@
-import {
-  BotIcon,
-  CheckIcon,
-  ExternalLinkIcon,
-  GlobeIcon,
-  GitBranchIcon,
-  QrCodeIcon,
-  ServerIcon,
-} from "lucide-react";
-import { AnimatedHeading } from "@/components/landing/fx";
-import { Reveal } from "@/components/landing/reveal";
+import { BotIcon, CheckIcon, ExternalLinkIcon, GitBranchIcon, GlobeIcon, QrCodeIcon, ServerIcon, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { LandingDict } from "@/lib/landing";
+import type { GuideBlock, GuideTab } from "@/lib/landing/types";
 import { HAS_AFFILIATE, RESOURCES, type Resource } from "@/lib/resources";
-import { LEGAL, SITE } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { AnimatedHeading } from "./fx";
+import { Reveal } from "./reveal";
+import { Rich } from "./rich";
 
-function Steps({ items }: { items: React.ReactNode[] }) {
-  return (
-    <ol className="grid gap-4">
-      {items.map((t, i) => (
-        <li key={i} className="flex items-start gap-4">
-          <span className="bg-brand-button mt-0.5 grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold text-white">{i + 1}</span>
-          <span className="text-[15px] leading-relaxed text-navy/90">{t}</span>
-        </li>
-      ))}
-    </ol>
-  );
+type GuideDict = LandingDict["guide"];
+
+const TAB_ICONS: Record<GuideTab["id"], LucideIcon> = {
+  order: QrCodeIcon,
+  github: GitBranchIcon,
+  vps: ServerIcon,
+  domain: GlobeIcon,
+  ai: BotIcon,
+};
+
+function Block({ block, g, en }: { block: GuideBlock; g: GuideDict; en: boolean }) {
+  switch (block.type) {
+    case "steps":
+      return (
+        <ol className="grid gap-4">
+          {block.items.map((item, i) => (
+            <li key={i} className="flex items-start gap-4">
+              <span className="bg-brand-button mt-0.5 grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold text-white">{i + 1}</span>
+              <span className="text-[15px] leading-relaxed text-navy/90"><Rich text={item} /></span>
+            </li>
+          ))}
+        </ol>
+      );
+    case "checks":
+      return (
+        <ul className="grid gap-3">
+          {block.items.map((item, i) => (
+            <li key={i} className="flex items-start gap-3 text-[15px] leading-relaxed text-navy/90">
+              <span className="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-secondary text-iris">
+                <CheckIcon className="size-3.5" strokeWidth={3} />
+              </span>
+              <span><Rich text={item} /></span>
+            </li>
+          ))}
+        </ul>
+      );
+    case "tip":
+      return (
+        <p
+          className={cn(
+            "rounded-xl border p-3.5 text-sm leading-relaxed",
+            block.tone === "warn" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-iris/20 bg-secondary/60 text-secondary-foreground",
+          )}
+        >
+          <Rich text={block.text} />
+        </p>
+      );
+    case "links":
+      return (
+        <div className={cn("grid gap-6", block.groups.length > 1 && "lg:grid-cols-2")}>
+          {block.groups.map((group) => (
+            <Links key={group.title} title={group.title} items={RESOURCES[group.list]} g={g} en={en} />
+          ))}
+        </div>
+      );
+  }
 }
 
-function Checks({ items }: { items: React.ReactNode[] }) {
-  return (
-    <ul className="grid gap-3">
-      {items.map((t, i) => (
-        <li key={i} className="flex items-start gap-3 text-[15px] leading-relaxed text-navy/90">
-          <span className="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-secondary text-iris">
-            <CheckIcon className="size-3.5" strokeWidth={3} />
-          </span>
-          <span>{t}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Tip({ children, tone = "info" }: { children: React.ReactNode; tone?: "info" | "warn" }) {
-  return (
-    <p
-      className={cn(
-        "rounded-xl border p-3.5 text-sm leading-relaxed",
-        tone === "warn" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-iris/20 bg-secondary/60 text-secondary-foreground",
-      )}
-    >
-      {children}
-    </p>
-  );
-}
-
-function Links({ title, items }: { title: string; items: readonly Resource[] }) {
+function Links({ title, items, g, en }: { title: string; items: readonly Resource[]; g: GuideDict; en: boolean }) {
   return (
     <div>
       <p className="mb-2.5 text-sm font-semibold text-navy">{title}</p>
@@ -71,13 +82,13 @@ function Links({ title, items }: { title: string; items: readonly Resource[] }) 
             >
               <span className="min-w-0">
                 <span className="flex flex-wrap items-center gap-2 font-semibold text-navy">
-                  {r.name}
-                  {r.affiliate && <Badge variant="secondary" className="h-4.5 px-1.5 text-[10px] text-iris">Liên kết giới thiệu</Badge>}
+                  {(en && r.nameEn) || r.name}
+                  {r.affiliate && <Badge variant="secondary" className="h-4.5 px-1.5 text-[10px] text-iris">{g.affiliateBadge}</Badge>}
                 </span>
-                <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{r.note}</span>
+                <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{en ? r.noteEn : r.note}</span>
               </span>
               <ExternalLinkIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-iris" aria-hidden />
-              <span className="sr-only">(mở trong tab mới)</span>
+              <span className="sr-only">{g.newTab}</span>
             </a>
           </li>
         ))}
@@ -86,120 +97,49 @@ function Links({ title, items }: { title: string; items: readonly Resource[] }) 
   );
 }
 
-const TABS = [
-  { v: "order", label: "Cách đặt hàng", icon: QrCodeIcon },
-  { v: "github", label: "Chuẩn bị GitHub", icon: GitBranchIcon },
-  { v: "vps", label: "Chuẩn bị VPS", icon: ServerIcon },
-  { v: "domain", label: "Tên miền", icon: GlobeIcon },
-  { v: "ai", label: "AI & công cụ", icon: BotIcon },
-];
-
-export function Guide() {
+export function Guide({ t }: { t: LandingDict }) {
+  const g = t.guide;
+  const en = t.locale === "en";
   return (
     <section id="huong-dan" className="scroll-mt-16 bg-brand-soft py-20 sm:py-28">
       <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
         <Reveal className="mx-auto mb-10 max-w-4xl text-center sm:mb-14">
-          <p className="mb-3 font-archivo text-xs font-semibold tracking-[0.2em] text-iris uppercase">Hướng dẫn</p>
-          <AnimatedHeading title="Đặt hàng và chuẩn bị" accent="trước khi cài đặt" />
-          <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Chuẩn bị sẵn những thứ dưới đây, buổi setup sẽ nhanh và suôn sẻ hơn. Bạn có thể vừa mua vừa chuẩn bị song song.
-          </p>
+          <p className="mb-3 font-archivo text-xs font-semibold tracking-[0.2em] text-iris uppercase">{g.eyebrow}</p>
+          <AnimatedHeading title={g.title} accent={g.accent} />
+          <p className="mt-4 text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">{g.lead}</p>
         </Reveal>
 
         <Reveal>
-          <Tabs defaultValue="order" className="gap-5">
+          <Tabs defaultValue={g.tabs[0]?.id ?? "order"} className="gap-5">
             <TabsList className="h-auto! w-full flex-wrap justify-start gap-1.5 rounded-2xl border bg-white p-1.5 sm:justify-center">
-              {TABS.map((t) => (
-                <TabsTrigger
-                  key={t.v}
-                  value={t.v}
-                  className="h-auto! flex-none gap-2 rounded-xl px-3.5 py-2 text-sm text-muted-foreground data-active:bg-iris! data-active:text-white! data-active:shadow-md data-active:shadow-iris/30"
-                >
-                  <t.icon /> {t.label}
-                </TabsTrigger>
-              ))}
+              {g.tabs.map((tab) => {
+                const Icon = TAB_ICONS[tab.id];
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className="h-auto! flex-none gap-2 rounded-xl px-3.5 py-2 text-sm text-muted-foreground data-active:bg-iris! data-active:text-white! data-active:shadow-md data-active:shadow-iris/30"
+                  >
+                    <Icon /> {tab.label}
+                  </TabsTrigger>
+                );
+              })}
             </TabsList>
 
             <div className="rounded-3xl border bg-white/70 p-5 shadow-sm backdrop-blur sm:p-8">
-              <TabsContent value="order" className="grid gap-6">
-                <Steps
-                  items={[
-                    <>Bấm <b>Mua ngay</b>, điền họ tên, số điện thoại/Zalo và email. Ô <b>tài khoản GitHub</b> là <b>không bắt buộc</b>: nếu đã có, điền username (không phải email) để được mời vào repo ngay; chưa có hoặc không rành thì cứ để trống, Nextgency sẽ hỗ trợ.</>,
-                    <>Tích xác nhận đã đọc Điều khoản sử dụng và Chính sách thanh toán &amp; hoàn tiền, rồi bấm <b>Tiếp tục thanh toán</b>.</>,
-                    <>Quét mã QR bằng app ngân hàng. Số tiền và nội dung chuyển khoản (mã đơn) đã được điền sẵn — <b>đừng sửa nội dung</b>.</>,
-                    <>Hệ thống tự xác nhận khi nhận được tiền và báo <b>Thanh toán thành công</b>. Hãy giữ lại mã đơn.</>,
-                    <>Màn hình thành công báo <b>nhân viên Nextgency sẽ liên hệ hỗ trợ bạn qua Zalo</b> (số bạn đã đăng ký) trong giờ làm việc ({LEGAL.workHours}). Nếu bạn đã điền GitHub, lời mời vào repo được gửi tự động — hãy chấp nhận trong email/thông báo GitHub. Cần hỗ trợ thêm? Nhắn tin <a href={SITE.contact.fanpage} target="_blank" rel="noopener noreferrer" className="font-semibold text-iris underline underline-offset-4">fanpage Nextgency</a>.</>,
-                  ]}
-                />
-                <Tip>
-                  Lỡ đóng cửa sổ thanh toán? Bấm <b>Mua ngay</b> lần nữa để mở lại mã QR đang chờ (trong cùng phiên trình duyệt). Mã đơn giữ hiệu lực {LEGAL.orderValidDays} ngày. Chuyển thiếu, thừa hoặc sai nội dung? Xem <a href="/policies/chinh-sach-thanh-toan" className="font-semibold text-iris underline underline-offset-4">Chính sách thanh toán</a>.
-                </Tip>
-              </TabsContent>
-
-              <TabsContent value="github" className="grid gap-6">
-                <Tip>Bạn <b>không cần</b> có sẵn tài khoản GitHub khi đặt hàng. Nếu chưa có hoặc không rành, nhân viên Nextgency sẽ hướng dẫn tạo tài khoản khi liên hệ qua Zalo.</Tip>
-                <Steps
-                  items={[
-                    <>Tạo tài khoản GitHub (miễn phí) và xác minh email.</>,
-                    <>Khuyến nghị <b>tạo tài khoản riêng cho máy chủ</b> (ví dụ <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">congty-ads-server</code>). Token loại classic cần quyền <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">repo</code> — quyền này đọc/ghi mọi repo của chính tài khoản đó, nên đừng dùng tài khoản đang chứa dự án quan trọng.</>,
-                    <>Khai báo đúng tên tài khoản này khi đặt hàng (hoặc báo cho nhân viên khi được liên hệ), rồi chấp nhận lời mời vào repo khi nhận được.</>,
-                    <>Tạo 1 token (Tokens classic): tích <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">repo</code> và <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">read:packages</code>, chọn hạn 1 năm, bấm Generate rồi <b>sao chép ngay</b> (GitHub chỉ hiện một lần).</>,
-                  ]}
-                />
-                <Tip tone="warn">Cất token trong trình quản lý mật khẩu. Không gửi token cho bất kỳ ai, kể cả khi nhờ hỗ trợ, và không dán vào chat/email.</Tip>
-                <Links title="Liên kết hữu ích" items={RESOURCES.github} />
-              </TabsContent>
-
-              <TabsContent value="vps" className="grid gap-6">
-                <Checks
-                  items={[
-                    <>Hệ điều hành <b>Ubuntu 24.04</b> (khuyến nghị) hoặc Debian 12.</>,
-                    <>Cấu hình tối thiểu <b>1 vCPU, 2 GB RAM, 20 GB ổ cứng</b>. Nên chọn vùng máy chủ gần Việt Nam để truy cập nhanh hơn.</>,
-                    <>Nhà cung cấp sẽ gửi cho bạn <b>địa chỉ IP, tên đăng nhập và mật khẩu</b> (hoặc khóa SSH) của VPS.</>,
-                    <>Máy của bạn là Windows 10/11 hoặc macOS để kết nối bằng lệnh <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">ssh root@IP_VPS</code> (PowerShell / Terminal).</>,
-                    <>Nếu trỏ tên miền thẳng về IP, cần mở cổng 80 và 443; nếu dùng Cloudflare Tunnel thì không cần mở cổng nào.</>,
-                  ]}
-                />
-                <Tip>Không gửi mật khẩu root cho người khác qua chat. Khi cần hỗ trợ từ xa, hãy làm theo mục “Hỗ trợ từ xa và an toàn truy cập” trong <a href="/policies/chinh-sach-ho-tro" className="font-semibold text-iris underline underline-offset-4">Chính sách hỗ trợ</a>.</Tip>
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <Links title="VPS nước ngoài" items={RESOURCES.vpsIntl} />
-                  <Links title="VPS trong nước" items={RESOURCES.vpsVn} />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="domain" className="grid gap-6">
-                <Checks
-                  items={[
-                    <>Cần <b>1 tên miền</b> (ví dụ <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">congty.vn</code>). Phần mềm chạy ở tên miền con, ví dụ <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">mcp.congty.vn</code>.</>,
-                    <>Nên đặt tên miền con bắt đầu bằng <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">mcp.</code>; tránh bắt đầu bằng <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">ads.</code> vì một số trình chặn quảng cáo/diệt virus có thể chặn mất giao diện.</>,
-                    <>Cách 1: tạo bản ghi <b>A</b> trỏ tên miền con về IP VPS (nếu dùng Cloudflare, để đám mây <b>xám — DNS only</b>).</>,
-                    <>Cách 2: dùng <b>Cloudflare Tunnel</b> — tên miền phải đang được quản lý trên Cloudflare, không cần mở cổng trên VPS.</>,
-                  ]}
-                />
-                <Links title="Nơi đăng ký tên miền" items={RESOURCES.domain} />
-              </TabsContent>
-
-              <TabsContent value="ai" className="grid gap-6">
-                <Checks
-                  items={[
-                    <>Chọn ít nhất <b>1 ứng dụng AI</b> bạn sẽ dùng: Claude, ChatGPT hoặc Gemini (Gemini CLI/Enterprise; Gemini web cá nhân chưa được hỗ trợ). Kiểm tra gói của bạn có cho phép kết nối MCP/connector tùy chỉnh.</>,
-                    <>Có quyền quản trị/phân tích phù hợp trên các <b>tài khoản quảng cáo</b> cần kết nối (Meta, TikTok, Google, OpenAI Ads).</>,
-                    <><b>Tùy chọn:</b> tài khoản Apify để nghiên cứu thị trường (chi phí phát sinh riêng trên Apify) và một bot Telegram để nhận thông báo.</>,
-                  ]}
-                />
-                <div className="grid gap-6 lg:grid-cols-2">
-                  <Links title="Ứng dụng AI" items={RESOURCES.ai} />
-                  <Links title="Công cụ bổ sung" items={RESOURCES.tools} />
-                </div>
-              </TabsContent>
+              {g.tabs.map((tab) => (
+                <TabsContent key={tab.id} value={tab.id} className="grid gap-6">
+                  {tab.blocks.map((block, i) => (
+                    <Block key={i} block={block} g={g} en={en} />
+                  ))}
+                </TabsContent>
+              ))}
             </div>
           </Tabs>
         </Reveal>
 
         {HAS_AFFILIATE && (
-          <p className="mx-auto mt-6 max-w-[960px] text-center text-xs leading-relaxed text-muted-foreground">
-            Các liên kết có nhãn “Liên kết giới thiệu” là liên kết affiliate: Nextgency có thể nhận hoa hồng khi bạn đăng ký qua đó. Bạn hoàn toàn có thể dùng nhà cung cấp khác đáp ứng yêu cầu kỹ thuật.
-          </p>
+          <p className="mx-auto mt-6 max-w-[960px] text-center text-xs leading-relaxed text-muted-foreground">{g.affiliateNote}</p>
         )}
       </div>
     </section>

@@ -7,7 +7,8 @@ export const orderInputSchema = z.object({
     .string()
     .trim()
     .transform((v) => v.replace(/[\s.\-()]/g, ""))
-    .pipe(z.string().regex(/^(?:\+?84|0)\d{9}$/, "Số điện thoại chưa đúng (VD: 0901234567)")),
+    // Số Việt Nam (0… / 84… / +84…) hoặc số quốc tế dạng +mã nước (khách từ trang /en). Tối đa 16 ký tự, vừa cột VARCHAR(20).
+    .pipe(z.string().regex(/^(?:(?:\+?84|0)\d{9}|\+[1-9]\d{7,14})$/, "Số điện thoại chưa đúng (VD: 0901234567, số nước ngoài dạng +65…)")),
   email: z.string().trim().toLowerCase().max(120).pipe(z.email("Email chưa đúng định dạng")),
   // Không bắt buộc: khách không rành kỹ thuật có thể bỏ trống, Nextgency hỗ trợ tạo/mời sau khi thanh toán.
   // Để trống => lưu chuỗi rỗng "".

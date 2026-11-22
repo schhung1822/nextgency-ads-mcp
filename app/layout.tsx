@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Geist_Mono, Hubot_Sans } from "next/font/google";
 import { AnalyticsNoscript, AnalyticsScripts } from "@/components/analytics/analytics";
 import { Toaster } from "@/components/ui/sonner";
-import { SITE, formatVnd } from "@/lib/site";
+import { getLanding } from "@/lib/landing";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const hubot = Hubot_Sans({
@@ -19,14 +20,14 @@ const archivo = Archivo({
 
 const mono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-const title = `${SITE.productName}: ${SITE.tagline} | Nextgency`;
-const description = `Hỏi AI bằng tiếng Việt: video nào ra khách, tiền quảng cáo đang phí ở đâu, đối thủ đang làm gì. Ads MCP Simple kết nối AI với quảng cáo Facebook, TikTok, Google; có Nextgency hỗ trợ cài đặt. Trọn bộ ${formatVnd(SITE.price)}.`;
+// Mặc định là nội dung tiếng Việt; trang /en tự ghi đè title, description, openGraph.
+const { title, description, ogLocale } = getLanding("vi").meta;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title,
   description,
-  openGraph: { title, description, type: "website", locale: "vi_VN", siteName: "Nextgency" },
+  openGraph: { title, description, type: "website", locale: ogLocale, alternateLocale: ["en_US"], siteName: "Nextgency" },
   twitter: { card: "summary_large_image", title, description },
 };
 

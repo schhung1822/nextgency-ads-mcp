@@ -70,18 +70,12 @@ export function AnimatedHeading({
   );
 }
 
-export function HeroTitle() {
+export function HeroTitle({ title, accent }: { title: string; accent: string }) {
   return (
     <h1 className="text-4xl leading-[1.08] font-bold tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
-      <BlurText
-        text="Năm 2027, ai kinh doanh"
-        animateBy="words"
-        trigger="load"
-        color="#ffffff"
-        className=""
-      />
+      <BlurText text={title} animateBy="words" trigger="load" color="#ffffff" className="" />
       <GradientText colors={["#9ed6ff", "#c08dfe", "#9a63ff", "#9ed6ff"]} animationSpeed={6}>
-        cũng cần biết MCP.
+        {accent}
       </GradientText>
     </h1>
   );
@@ -107,28 +101,11 @@ export function Stat({
   );
 }
 
-const MARQUEE = [
-  "Facebook Ads",
-  "TikTok Ads",
-  "Google Ads",
-  "OpenAI Ads",
-  "Telegram",
-  "Claude",
-  "ChatGPT",
-  "Gemini",
-  "Shopee",
-  "TikTok Shop",
-  "Lazada",
-  "Thư viện quảng cáo Facebook",
-  "Google Maps",
-  "YouTube",
-];
-
-export function PlatformMarquee() {
+export function PlatformMarquee({ items, label }: { items: string[]; label: string }) {
   return (
     <LogoLoop
-      ariaLabel="Nền tảng và nguồn dữ liệu được hỗ trợ"
-      logos={MARQUEE.map((name) => ({
+      ariaLabel={label}
+      logos={items.map((name) => ({
         node: (
           <span className="rounded-full border border-iris/15 bg-white px-5 py-2 text-sm font-semibold whitespace-nowrap text-navy/80 shadow-sm">
             {name}

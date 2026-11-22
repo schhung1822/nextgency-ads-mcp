@@ -11,6 +11,8 @@ export const SITE = {
   price: 1_999_000,
   // Để trống = không hiển thị giá gạch ngang. Chỉ đặt khi bạn thực sự có giá niêm yết cao hơn.
   compareAtPrice: null as number | null,
+  // Giá gói Ads AI (Nextgency vận hành giúp), VND / tháng. Để null = hiển thị "Báo giá theo nhu cầu".
+  adsAiMonthlyPrice: null as number | null,
   // Link đặt lịch hỗ trợ setup (Cal.com / Lark Calendar / Google appointment). Để trống = ẩn nút.
   bookingUrl: process.env.NEXT_PUBLIC_BOOKING_URL ?? "",
   contact: {
@@ -45,8 +47,8 @@ export const LEGAL = {
   orderValidDays: 7,
 } as const;
 
-export function formatVnd(amount: number): string {
-  return new Intl.NumberFormat("vi-VN").format(amount) + "₫";
+export function formatVnd(amount: number, locale: "vi" | "en" = "vi"): string {
+  return new Intl.NumberFormat(locale === "en" ? "en-US" : "vi-VN").format(amount) + "₫";
 }
 
 export const POLICIES = [

@@ -2,6 +2,8 @@
 
 import { useEffect, useReducer, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowUpIcon, CheckIcon, Loader2Icon } from "lucide-react";
+import type { LandingDict } from "@/lib/landing";
+import type { ChatBody as Body, ChatScenario as Scenario } from "@/lib/landing/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,73 +16,7 @@ import { cn } from "@/lib/utils";
  * Cách làm: một máy trạng thái (phase + bộ đếm n); mỗi lần trạng thái đổi, đặt đúng một timer để tiến tới bước kế.
  */
 
-type Body =
-  | { kind: "rank"; rows: { label: string; value: number; tag?: "top" | "stop" }[]; hint: string }
-  | { kind: "split"; good: { label: string; value: string; pct: number }; bad: { label: string; value: string }; note: string; ask: string; done: string }
-  | { kind: "bullets"; items: string[] };
-
-type Scenario = {
-  chip: string;
-  question: string;
-  tools: [brand: string, text: string][];
-  intro: string;
-  body: Body;
-};
-
-const SCENARIOS: Scenario[] = [
-  {
-    chip: "Video nào ra khách?",
-    question: "Video nào tuần này ra khách nhiều nhất?",
-    tools: [
-      ["Facebook Ads", "Đọc số liệu 12 video"],
-      ["TikTok Ads", "Đọc số liệu video tuần này"],
-    ],
-    intro: "Video chủ shop tự tư vấn trước máy ra khách tốt nhất:",
-    body: {
-      kind: "rank",
-      rows: [
-        { label: "Chủ shop tự tư vấn", value: 42, tag: "top" },
-        { label: "Vlog hậu trường", value: 27 },
-        { label: "Giới thiệu cửa hàng", value: 3, tag: "stop" },
-      ],
-      hint: "Gợi ý: làm thêm video giống video số 1, dừng video cuối.",
-    },
-  },
-  {
-    chip: "Tiền có bị phí không?",
-    question: "Tiền quảng cáo tuần này có bị phí không?",
-    tools: [
-      ["Facebook Ads", "Cộng chi tiêu 2 tài khoản"],
-      ["Google Ads", "Cộng chi tiêu 1 tài khoản"],
-    ],
-    intro: "Tuần này bạn chi 4,8 triệu:",
-    body: {
-      kind: "split",
-      good: { label: "mang về khách", value: "3,9 tr", pct: 81 },
-      bad: { label: "chưa ra khách", value: "0,9 tr" },
-      note: "Mỗi khách tốn khoảng 25.000₫",
-      ask: "Tắt 2 quảng cáo chưa ra khách nào?",
-      done: "Đã tắt 2 quảng cáo. Sáng mai mình báo lại kết quả qua Telegram cho bạn.",
-    },
-  },
-  {
-    chip: "Đối thủ đang làm gì?",
-    question: "Đối thủ quanh mình đang quảng cáo gì, khách chê gì?",
-    tools: [
-      ["Thư viện quảng cáo Facebook", "Quảng cáo của đối thủ"],
-      ["Google Maps", "Đánh giá của khách"],
-    ],
-    intro: "Mình tóm tắt nhanh:",
-    body: {
-      kind: "bullets",
-      items: [
-        "Đối thủ đang đẩy ưu đãi “mua 1 tặng 1” và miễn phí giao hàng.",
-        "Khách hay chê: giao chậm, nhân viên trả lời muộn.",
-        "Gợi ý: ghi rõ “trả lời trong 5 phút” ngay trong quảng cáo của bạn.",
-      ],
-    },
-  },
-];
+type Chat = LandingDict["hero"]["chat"];
 
 /* ------------------------------------------------------------- máy trạng thái */
 
@@ -89,7 +25,7 @@ type Phase = (typeof ORDER)[number];
 const at = (p: Phase) => ORDER.indexOf(p);
 
 type State = { sc: number; phase: Phase; n: number };
-type Action = { type: "advance"; reduce: boolean } | { type: "jump"; sc: number } | { type: "set"; n: number };
+type Action = { type: "advance"; reduce: boolean; scenarios: Scenario[] } | { type: "jump"; sc: number } | { type: "set"; n: number };
 
 // Gõ chữ / trả lời từng chữ tính theo THỜI GIAN THỰC (không dùng timer từng ký tự) để tốc độ không phụ thuộc máy nhanh hay chậm.
 const TYPE_MS = 42; // mỗi ký tự khi "gõ" câu hỏi
@@ -102,6 +38,7 @@ const itemsOf = (b: Body) => (b.kind === "rank" ? b.rows.length + 1 : b.kind ===
 function reducer(s: State, a: Action): State {
   if (a.type === "jump") return { sc: a.sc, phase: "typing", n: 0 };
   if (a.type === "set") return { ...s, n: a.n };
+  const SCENARIOS = a.scenarios;
   const sc = SCENARIOS[s.sc];
   if (a.reduce) {
     // Giảm chuyển động: hiện sẵn kết quả đầy đủ, chỉ đổi câu hỏi sau mỗi vài giây.
@@ -170,7 +107,8 @@ const getMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").ma
 
 /* ------------------------------------------------------------------ giao diện */
 
-export function HeroChat() {
+export function HeroChat({ t }: { t: Chat }) {
+  const SCENARIOS = t.scenarios;
   const reduce = useSyncExternalStore(subscribeMotion, getMotion, () => false);
   const [s, dispatch] = useReducer(reducer, { sc: 0, phase: "typing", n: 0 });
   const rootRef = useRef<HTMLDivElement>(null);
@@ -207,9 +145,9 @@ export function HeroChat() {
       return () => cancelAnimationFrame(raf);
     }
 
-    const t = setTimeout(() => dispatch({ type: "advance", reduce }), delay(s, reduce));
+    const t = setTimeout(() => dispatch({ type: "advance", reduce, scenarios: SCENARIOS }), delay(s, reduce));
     return () => clearTimeout(t);
-  }, [s, reduce, visible]);
+  }, [s, reduce, visible, SCENARIOS]);
 
   const sc = SCENARIOS[s.sc];
   const p = at(s.phase);
@@ -229,16 +167,16 @@ export function HeroChat() {
         <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
           <span className="bg-brand-button grid size-9 place-items-center rounded-full font-archivo text-xs font-bold text-white">AI</span>
           <div className="min-w-0 leading-tight">
-            <p className="text-sm font-semibold text-white">Đội quảng cáo AI</p>
+            <p className="text-sm font-semibold text-white">{t.team}</p>
             <p className="flex items-center gap-1.5 text-xs text-white/55">
               <span className="relative flex size-1.5 shrink-0">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400/70" />
                 <span className="relative inline-flex size-1.5 rounded-full bg-emerald-400" />
               </span>
-              <span className="truncate">Đang trực · Facebook, TikTok, Google</span>
+              <span className="truncate">{t.status}</span>
             </p>
           </div>
-          <span className="ml-auto hidden shrink-0 text-[10px] tracking-wider whitespace-nowrap text-white/40 uppercase sm:inline">Minh họa</span>
+          <span className="ml-auto hidden shrink-0 text-[10px] tracking-wider whitespace-nowrap text-white/40 uppercase sm:inline">{t.badge}</span>
         </div>
 
         {/* Vùng hội thoại: nội dung mới nằm dưới, nội dung cũ trôi lên và mờ dần ở mép trên như chat thật */}
@@ -252,7 +190,7 @@ export function HeroChat() {
             )}
           >
             <div className="max-w-[88%] rounded-2xl rounded-bl-sm border border-white/10 bg-white/5 px-4 py-2.5 text-white/85 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              Xin chào! Hôm nay bạn muốn mình xem giúp gì?
+              {t.greeting}
             </div>
 
             {p >= at("sent") && (
@@ -288,7 +226,7 @@ export function HeroChat() {
             {introWords > 0 && (
               <div className="grid max-w-[94%] gap-3 rounded-2xl rounded-bl-sm border border-white/10 bg-white/5 px-4 py-3 text-white/90 animate-in fade-in slide-in-from-bottom-1 duration-300">
                 <p>{wordsOf(sc.intro).slice(0, introWords).join(" ")}</p>
-                <Answer body={sc.body} shown={shownItems} phase={s.phase} />
+                <Answer body={sc.body} shown={shownItems} phase={s.phase} t={t} />
               </div>
             )}
           </div>
@@ -304,7 +242,7 @@ export function HeroChat() {
                   <span className="ml-0.5 inline-block h-3.5 w-px translate-y-0.5 animate-pulse bg-white" />
                 </>
               ) : (
-                <span className="text-white/35">Nhắn cho đội quảng cáo…</span>
+                <span className="text-white/35">{t.placeholder}</span>
               )}
             </span>
           </div>
@@ -319,13 +257,11 @@ export function HeroChat() {
         </div>
       </div>
 
-      <p className="sr-only">
-        Ví dụ cuộc trò chuyện: bạn hỏi “{SCENARIOS[0].question}”, “{SCENARIOS[1].question}” hoặc “{SCENARIOS[2].question}”; đội AI đọc số liệu quảng cáo và dữ liệu thị trường rồi trả lời bằng tiếng Việt, kèm gợi ý hành động.
-      </p>
-      <p className="mt-2 text-center text-[11px] text-white/45">Mô phỏng, số liệu minh họa. Kết quả thực tế tùy tài khoản của bạn.</p>
+      <p className="sr-only">{t.srSummary}</p>
+      <p className="mt-2 text-center text-[11px] text-white/45">{t.note}</p>
 
       <div className="mt-3">
-        <p className="mb-2 text-center text-xs text-white/55">Chủ doanh nghiệp hay hỏi — bấm để xem</p>
+        <p className="mb-2 text-center text-xs text-white/55">{t.asksLabel}</p>
         <div className="flex flex-wrap justify-center gap-2">
           {SCENARIOS.map((it, i) => (
             <button
@@ -347,7 +283,7 @@ export function HeroChat() {
   );
 }
 
-function Answer({ body, shown, phase }: { body: Body; shown: number; phase: Phase }) {
+function Answer({ body, shown, phase, t }: { body: Body; shown: number; phase: Phase; t: Chat }) {
   const p = at(phase);
   const enter = "animate-in fade-in slide-in-from-bottom-1 duration-300";
 
@@ -361,10 +297,10 @@ function Answer({ body, shown, phase }: { body: Body; shown: number; phase: Phas
               <span className="flex items-center gap-2 text-white">
                 <span className="grid size-5 place-items-center rounded-full bg-white/10 text-[10px] font-bold">{i + 1}</span>
                 {r.label}
-                {r.tag === "top" && <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">Số 1</span>}
-                {r.tag === "stop" && <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-semibold text-amber-300">Nên dừng</span>}
+                {r.tag === "top" && <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">{t.top}</span>}
+                {r.tag === "stop" && <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-semibold text-amber-300">{t.stop}</span>}
               </span>
-              <b className="text-white">{r.value} khách</b>
+              <b className="text-white">{r.value} {t.unit}</b>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
               <div
@@ -406,9 +342,9 @@ function Answer({ body, shown, phase }: { body: Body; shown: number; phase: Phas
                   phase === "pressed" && "scale-95 ring-2 ring-white/60 brightness-125",
                 )}
               >
-                Đồng ý
+                {t.yes}
               </span>
-              <span className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-medium text-white/80">Để sau</span>
+              <span className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-medium text-white/80">{t.later}</span>
             </div>
           </div>
         )}
