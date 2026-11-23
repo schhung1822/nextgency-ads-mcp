@@ -126,6 +126,21 @@
   }
 }
 
+/* Cột biểu đồ "mọc lên" trong khung demo của trang /global (chiều cao đích lấy từ style inline) */
+@keyframes bar-rise {
+  from {
+    transform: scaleY(0.25);
+    opacity: 0.4;
+  }
+}
+@utility bar-rise {
+  transform-origin: bottom;
+  animation: bar-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 /* Gradient thương hiệu — lấy từ nextgency.vn */
 @utility bg-brand-hero {
   background:

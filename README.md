@@ -1,6 +1,6 @@
 # Landing page bán Ads MCP Simple — Nextgency
 
-Next.js 16 (App Router) + shadcn/ui (base-nova) + Tailwind 4. Thanh toán chuyển khoản qua **SePay**, thông báo đơn về **Lark**, deploy trên **Vercel**.
+Next.js 16 (App Router) + shadcn/ui (base-nova) + Tailwind 4. Trang Việt Nam thanh toán chuyển khoản qua **SePay**; trang quốc tế `/global` thanh toán USD qua **PayPal**. Đơn được lưu vào MySQL, thông báo về **Lark**, deploy trên **Vercel**.
 
 ## Luồng
 
@@ -29,6 +29,25 @@ Sao chép `.env.example` → `.env.local` (local) hoặc nhập vào Vercel → 
 | `NEXT_PUBLIC_BOOKING_URL` | Link đặt lịch setup (Cal.com / Lark Calendar…). Trống = ẩn nút |
 | `NEXT_PUBLIC_*` | URL site, Zalo/hotline/email hiển thị |
 
+### Trang quốc tế `/global` + PayPal
+
+Trang `/global` chỉ dùng tiếng Anh, có checkout PayPal và bốn trang chính sách tiếng Anh dùng chung thông tin pháp lý với trang mặc định:
+
+- `/global/terms`
+- `/global/privacy`
+- `/global/payment-refund-policy`
+- `/global/support-policy`
+
+Thiết lập trong PayPal Developer → **Apps & Credentials**:
+
+1. Tạo REST app bằng tài khoản PayPal Business; lấy Client ID và Secret cùng môi trường.
+2. Điền `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV=sandbox` để thử hoặc `live` để thu tiền thật.
+3. Tạo webhook `https://<domain>/api/paypal/webhook`, chọn các event ghi trong `.env.example`, rồi điền `PAYPAL_WEBHOOK_ID`.
+4. Đặt giá bằng `NEXT_PUBLIC_GLOBAL_PRICE_USD` (mặc định `79`) và email hỗ trợ bằng `NEXT_PUBLIC_GLOBAL_CONTACT_EMAIL`.
+5. Chạy `npm run db:migrate`, deploy lại, rồi thanh toán thử trong PayPal Sandbox trước khi chuyển sang Live.
+
+Client ID là biến public; Secret và Webhook ID chỉ được đặt ở server/Vercel. Giá được server tạo trực tiếp khi gọi PayPal Orders v2, không nhận từ trình duyệt. Webhook được xác minh chữ ký và capture được ghi chống trùng theo `capture_id`.
+
 ### SePay
 - Tích hợp WebHooks → Thêm webhook: URL `https://<domain>/api/sepay/webhook`, sự kiện **Có tiền vào**, kiểu chứng thực **API Key** = `SEPAY_WEBHOOK_API_KEY`.
 - (Khuyến nghị) Cấu hình công ty → Cấu trúc mã thanh toán: tiền tố trùng `SEPAY_CODE_PREFIX`.
@@ -55,14 +74,14 @@ Vercel không có IP cố định, nên VPS phải cho phép kết nối từ In
 ### Tạo bảng
 Điền `DATABASE_URL` vào `.env` rồi chạy: `npm run db:migrate` (đọc [db/schema.sql](db/schema.sql); an toàn khi chạy lại). Hoặc dán file đó vào phpMyAdmin/Adminer.
 
-Ba bảng: `orders` (đơn + trạng thái), `sepay_transactions` (sổ giao dịch ngân hàng, mỗi giao dịch xử lý đúng một lần), `rate_limits`.
+Các bảng chính: `orders` (đơn + trạng thái), `sepay_transactions` (giao dịch ngân hàng), `paypal_transactions` (PayPal capture), `rate_limits` và `order_tracking`. Mỗi mã giao dịch/capture chỉ được xử lý một lần.
 
 ### Trạng thái đơn (`orders.status`)
 | Giá trị | Ý nghĩa |
 |---|---|
 | `pending` | Chờ thanh toán |
 | `underpaid` | Khách chuyển thiếu (số tiền cộng dồn trong `paid_amount`) |
-| `paid` | Thanh toán thành công (`paid_via` = `sepay` tự động / `manual` admin xác nhận) |
+| `paid` | Thanh toán thành công (`paid_via` = `sepay`, `paypal` hoặc `manual`) |
 | `cancelled` | Đã hủy (tiền vào đơn này sẽ báo Lark để đối soát tay) |
 
 ### Xác nhận thanh toán thủ công
@@ -141,6 +160,7 @@ Bảng `order_tracking` (trong `db/schema.sql`) lưu `_fbp`, `_fbc`, IP, user-ag
 
 Trong GTM: tạo trigger kiểu *Custom Event* với tên `complete_registration` và `purchase`, gắn vào tag *GA4 Event* (hoặc tag Google Ads…). Nếu đã đặt `NEXT_PUBLIC_META_PIXEL_ID` thì **đừng** thêm tag Meta Pixel trong GTM (đã được cài trực tiếp trong code).
 Email, SĐT, họ tên gửi cho Meta qua Conversions API đều được băm SHA-256. Nội dung chi tiết đã được ghi trong trang Quyền riêng tư.
+Riêng `/global`, GTM, Meta Pixel và các event trình duyệt/server chỉ chạy khi khách chọn **Accept all**; lựa chọn **Reject non-essential** không tải các công cụ đo lường.
 
 ## Chạy local
 ```bash

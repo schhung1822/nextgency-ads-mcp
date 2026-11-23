@@ -1,36 +1,69 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
+import { GlobalFooter } from "@/components/global/footer";
 import { Footer } from "@/components/landing/sections";
-import { LEGAL, POLICIES, SITE } from "@/lib/site";
+import { HtmlLang } from "@/components/landing/html-lang";
+import { GLOBAL, GLOBAL_POLICIES, LEGAL, LEGAL_GLOBAL, POLICIES, SITE } from "@/lib/site";
 import { cn } from "@/lib/utils";
+
+/** "vi" = trang chính sách tiếng Việt (/terms, /privacy, /policies/...) · "global" = bản tiếng Anh cho trang /global. */
+export type LegalLocale = "vi" | "global";
+
+const CHROME = {
+  vi: {
+    home: "/",
+    homeAria: "Nextgency — về trang chủ",
+    back: "Về trang chủ",
+    kicker: "Chính sách",
+    updated: `Cập nhật lần cuối: ${LEGAL.updated}`,
+    navLabel: "Các chính sách",
+    navTitle: "Chính sách khác",
+    policies: POLICIES as readonly { href: string; label: string }[],
+  },
+  global: {
+    home: GLOBAL.path,
+    homeAria: "Nextgency — back to home",
+    back: "Back to home",
+    kicker: "Policies",
+    updated: `Last updated: ${LEGAL_GLOBAL.updated}`,
+    navLabel: "Policies",
+    navTitle: "Other policies",
+    policies: GLOBAL_POLICIES as readonly { href: string; label: string }[],
+  },
+} as const;
 
 export function LegalPage({
   title,
   current,
   intro,
+  locale = "vi",
   children,
 }: {
   title: string;
-  current: (typeof POLICIES)[number]["href"];
+  /** href của trang hiện tại trong danh sách chính sách (để tô sáng). */
+  current: string;
   intro?: string;
+  locale?: LegalLocale;
   children: React.ReactNode;
 }) {
+  const c = CHROME[locale];
   return (
     <>
+      {locale === "global" && <HtmlLang lang="en" />}
       <header className="bg-brand-hero">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" aria-label="Nextgency — về trang chủ">
+          <Link href={c.home} aria-label={c.homeAria}>
             <Image src="/brand/logo-light.png" alt="Nextgency" width={640} height={105} priority className="h-6 w-auto sm:h-7" />
           </Link>
-          <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white">
-            <ArrowLeftIcon className="size-4" /> Về trang chủ
+          <Link href={c.home} className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white">
+            <ArrowLeftIcon className="size-4" /> {c.back}
           </Link>
         </div>
         <div className="mx-auto max-w-6xl px-4 pt-8 pb-12 sm:px-6 sm:pt-12 sm:pb-16">
-          <p className="font-archivo text-xs font-semibold tracking-[0.2em] text-sky uppercase">Chính sách</p>
+          <p className="font-archivo text-xs font-semibold tracking-[0.2em] text-sky uppercase">{c.kicker}</p>
           <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight text-white sm:text-5xl">{title}</h1>
-          <p className="mt-3 text-sm text-white/60">Cập nhật lần cuối: {LEGAL.updated}</p>
+          <p className="mt-3 text-sm text-white/60">{c.updated}</p>
         </div>
       </header>
 
@@ -41,10 +74,10 @@ export function LegalPage({
             {children}
           </article>
           <aside className="lg:sticky lg:top-6 lg:self-start">
-            <nav aria-label="Các chính sách" className="rounded-2xl border bg-white p-4">
-              <p className="mb-2 text-sm font-semibold text-navy">Chính sách khác</p>
+            <nav aria-label={c.navLabel} className="rounded-2xl border bg-white p-4">
+              <p className="mb-2 text-sm font-semibold text-navy">{c.navTitle}</p>
               <ul className="grid gap-1">
-                {POLICIES.map((p) => (
+                {c.policies.map((p) => (
                   <li key={p.href}>
                     <Link
                       href={p.href}
@@ -63,14 +96,14 @@ export function LegalPage({
           </aside>
         </div>
       </main>
-      <Footer />
+      {locale === "global" ? <GlobalFooter /> : <Footer />}
     </>
   );
 }
 
-export function Sec({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+export function Sec({ n, title, children, id }: { n: number; title: string; children: React.ReactNode; id?: string }) {
   return (
-    <section className="mb-9 scroll-mt-20" id={`muc-${n}`}>
+    <section className="mb-9 scroll-mt-20" id={id ?? `muc-${n}`}>
       <h2 className="mb-3 text-xl font-bold tracking-tight text-navy">
         {n}. {title}
       </h2>
@@ -88,7 +121,15 @@ export function Note({ children }: { children: React.ReactNode }) {
 }
 
 /** Thông tin liên hệ lấy từ cấu hình; ẩn các mục chưa điền. */
-export function ContactList() {
+export function ContactList({ locale = "vi" }: { locale?: LegalLocale }) {
+  if (locale === "global") {
+    return (
+      <Ul>
+        {GLOBAL.contactEmail && <li>Email: <b>{GLOBAL.contactEmail}</b></li>}
+        <li>Support hours: {LEGAL_GLOBAL.workHours}</li>
+      </Ul>
+    );
+  }
   const { zalo, phone, email } = SITE.contact;
   return (
     <Ul>
@@ -100,12 +141,14 @@ export function ContactList() {
   );
 }
 
-export function EmailInline() {
+export function EmailInline({ locale = "vi" }: { locale?: LegalLocale }) {
+  if (locale === "global") return <b>{GLOBAL.contactEmail || "the contact email published on this website"}</b>;
   return <b>{SITE.contact.email || "email liên hệ được công bố trên website"}</b>;
 }
 
-export const legalMeta = (title: string, description: string) => ({
+export const legalMeta = (title: string, description: string, locale: LegalLocale = "vi") => ({
   title: `${title} | Nextgency`,
   description,
   robots: { index: true, follow: true },
+  ...(locale === "global" ? { openGraph: { title: `${title} | Nextgency`, description, locale: "en_US" } } : {}),
 });

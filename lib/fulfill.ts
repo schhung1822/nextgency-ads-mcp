@@ -4,14 +4,16 @@ import { notifyPaid, type PaidTx } from "@/lib/notify";
 import {
   claimFulfillment,
   finishFulfillment,
+  getLatestPaypalTransaction,
   getLatestTransaction,
   getOrder,
+  isGlobalOrder,
   markLarkNotified,
   releaseFulfillment,
   setInvite,
 } from "@/lib/orders";
 import { reportPurchase } from "@/lib/server-tracking";
-import { formatVnd } from "@/lib/site";
+import { formatMoney } from "@/lib/site";
 import { deliverOrderEvent } from "@/lib/webhooks";
 
 export type FulfillResult = "done" | "skipped" | "retry";
@@ -40,7 +42,8 @@ export async function fulfillOrder(code: string): Promise<FulfillResult> {
       await releaseFulfillment(code);
       return "skipped";
     }
-    const tx: PaidTx | undefined = await getLatestTransaction(code);
+    // Giao dịch thanh toán gần nhất: PayPal (đơn quốc tế) hoặc chuyển khoản SePay (đơn VND).
+    const tx: PaidTx | undefined = isGlobalOrder(order) ? await getLatestPaypalTransaction(code) : await getLatestTransaction(code);
 
     // 1) Mời GitHub (chỉ khi chưa từng chạy; lỗi thì để Lark báo mời tay, không tự thử lại liên tục)
     if (!order.invite) {
@@ -53,7 +56,7 @@ export async function fulfillOrder(code: string): Promise<FulfillResult> {
     if (!order.larkNotifiedAt) {
       const extra =
         order.paidAmount > order.amount
-          ? `Khách chuyển dư ${formatVnd(order.paidAmount - order.amount)} — cần kiểm tra và hoàn lại phần dư nếu đúng.`
+          ? `Khách chuyển dư ${formatMoney(order.paidAmount - order.amount, order.currency, "vi")} — cần kiểm tra và hoàn lại phần dư nếu đúng.`
           : undefined;
       const res = await notifyPaid(order, tx, extra);
       if (!res.ok) {

@@ -49,7 +49,7 @@ type T = { t: LandingDict };
 
 /* ------------------------------------------------------------------ helpers */
 
-function SectionHead({
+export function SectionHead({
   eyebrow,
   title,
   accent,
@@ -85,11 +85,11 @@ function SectionHead({
   );
 }
 
-function Container({ children, className }: { children: React.ReactNode; className?: string }) {
+export function Container({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("mx-auto w-full max-w-[1200px] px-4 sm:px-6", className)}>{children}</div>;
 }
 
-function Tick({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
+export function Tick({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
     <li className="flex items-start gap-3">
       <span className={cn("mt-1 grid size-5 shrink-0 place-items-center rounded-full", dark ? "bg-white/15 text-sky" : "bg-secondary text-iris")}>
@@ -100,11 +100,11 @@ function Tick({ children, dark }: { children: React.ReactNode; dark?: boolean })
   );
 }
 
-function Chip({ children }: { children: React.ReactNode }) {
+export function Chip({ children }: { children: React.ReactNode }) {
   return <span className="rounded-full border border-iris/15 bg-white px-3 py-1 text-xs font-medium whitespace-nowrap text-navy/80 shadow-xs">{children}</span>;
 }
 
-const outlineOnLight = cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full border-iris/30 bg-white px-6 text-base text-navy hover:bg-secondary");
+export const outlineOnLight = cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full border-iris/30 bg-white px-6 text-base text-navy hover:bg-secondary");
 
 /* --------------------------------------------------------------------- hero */
 

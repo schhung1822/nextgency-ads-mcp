@@ -2,8 +2,8 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { sendLarkCard } from "@/lib/lark";
 import type { PaidTx } from "@/lib/notify";
-import { recordPaidHook, type Order } from "@/lib/orders";
-import { SITE, formatVnd } from "@/lib/site";
+import { isGlobalOrder, recordPaidHook, type Order } from "@/lib/orders";
+import { GLOBAL, SITE, formatMoney } from "@/lib/site";
 
 /**
  * Webhook GỬI ĐI tới hệ thống của bạn (n8n / Make / Zapier / server riêng) để gửi email cho khách.
@@ -32,18 +32,25 @@ const RETRY_DELAYS_MS = [0, 2000, 5000];
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export function buildPayload(kind: Kind, order: Order, tx?: PaidTx) {
+  const global = isGlobalOrder(order);
+  // Đơn VND: số tiền là đồng (như trước đây). Đơn USD: số tiền theo đô la (79 = $79), không phải cent, cho dễ dùng trong email.
+  const major = (minor: number) => (global ? minor / 100 : minor);
+  const base = SITE.url.replace(/\/$/, "");
   return {
     event: EVENT[kind],
     id: `${order.code}:${EVENT[kind]}`,
     occurredAt: new Date().toISOString(),
-    product: { name: SITE.productName, price: SITE.price, currency: "VND" },
+    // market: "vn" = trang tiếng Việt (SePay, VND) · "global" = trang /global (PayPal, USD)
+    market: global ? "global" : "vn",
+    product: { name: SITE.productName, price: global ? GLOBAL.priceUsd : SITE.price, currency: order.currency },
     order: {
       code: order.code,
-      amount: order.amount,
+      amount: major(order.amount),
+      currency: order.currency,
       status: order.status,
       createdAt: order.createdAt,
-      paidVia: order.paidVia ?? null, // sepay | manual
-      ...(kind === "paid" ? { paidAt: order.paidAt ?? null, paidAmount: order.paidAmount || order.amount } : {}),
+      paidVia: order.paidVia ?? null, // sepay | paypal | manual
+      ...(kind === "paid" ? { paidAt: order.paidAt ?? null, paidAmount: major(order.paidAmount || order.amount) } : {}),
     },
     customer: {
       name: order.name,
@@ -51,11 +58,13 @@ export function buildPayload(kind: Kind, order: Order, tx?: PaidTx) {
       email: order.email,
       github: order.github,
       note: order.note,
+      country: order.country ?? null,
+      marketingOptIn: order.marketingOptIn,
     },
     // Link tiện dùng khi soạn email
     links: {
-      site: SITE.url,
-      guide: `${SITE.url.replace(/\/$/, "")}/#huong-dan`,
+      site: global ? `${base}${GLOBAL.path}` : SITE.url,
+      guide: global ? `${base}${GLOBAL.path}#setup` : `${base}/#huong-dan`,
       booking: SITE.bookingUrl || null,
     },
     ...(kind === "paid"
@@ -123,7 +132,7 @@ export async function deliverOrderEvent(kind: Kind, order: Order, tx?: PaidTx): 
       tone: "orange",
       fields: [
         { label: "Mã đơn", value: order.code },
-        { label: "Số tiền", value: formatVnd(order.amount) },
+        { label: "Số tiền", value: formatMoney(order.amount, order.currency, "vi") },
         { label: "Khách hàng", value: order.name },
         { label: "Email", value: order.email },
         { label: "Lỗi", value: `${lastError} (đã thử ${attempts} lần)`, short: false },

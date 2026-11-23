@@ -37,7 +37,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="vi" className={`${hubot.variable} ${archivo.variable} ${mono.variable}`}>
+    <html lang="vi" data-scroll-behavior="smooth" className={`${hubot.variable} ${archivo.variable} ${mono.variable}`}>
       <body className="min-h-dvh">
         <AnalyticsNoscript />
         {children}

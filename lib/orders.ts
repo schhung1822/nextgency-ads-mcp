@@ -3,12 +3,14 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { db, dbConfigured } from "@/lib/db";
 import type { InviteResult, InviteStatus } from "@/lib/github";
 import type { SepayWebhookPayload } from "@/lib/sepay";
+import type { Currency } from "@/lib/site";
 
 /** Lưu đơn hàng trên MySQL (xem db/schema.sql). */
 export const isPersistent = dbConfigured;
 
 export type OrderStatus = "pending" | "underpaid" | "paid" | "cancelled";
 export type FulfillState = "pending" | "processing" | "done";
+export type PaidVia = "sepay" | "manual" | "paypal";
 
 export type Order = {
   code: string;
@@ -18,13 +20,23 @@ export type Order = {
   email: string;
   github: string;
   note: string;
+  /** Đơn vị nhỏ nhất của `currency` (VND: đồng, USD: cent). */
+  currency: Currency;
   amount: number;
   paidAmount: number;
   paidAt?: string;
-  paidVia?: "sepay" | "manual";
+  paidVia?: PaidVia;
   transactionId?: string;
   createdAt: string;
   consentAt?: string;
+  // Đơn quốc tế (PayPal)
+  country?: string;
+  marketingOptIn: boolean;
+  /** false = khách chưa đồng ý cookie đo lường → không gửi sự kiện về Meta Conversions API. */
+  trackConsent: boolean;
+  paypalOrderId?: string;
+  paypalCaptureId?: string;
+  payerEmail?: string;
   fulfillState: FulfillState;
   invite?: InviteResult;
   larkNotifiedAt?: string;
@@ -32,7 +44,11 @@ export type Order = {
   adminNote?: string;
 };
 
-export type NewOrder = Pick<Order, "code" | "name" | "phone" | "email" | "github" | "note" | "amount">;
+export type NewOrder = Pick<Order, "code" | "name" | "phone" | "email" | "github" | "note" | "amount"> &
+  Partial<Pick<Order, "currency" | "country" | "marketingOptIn" | "trackConsent">>;
+
+/** Đơn của trang quốc tế (không phải VND). Dùng để chọn nội dung thông báo / sự kiện đo lường phù hợp. */
+export const isGlobalOrder = (o: Pick<Order, "currency">) => o.currency !== "VND";
 
 type Row = RowDataPacket & {
   code: string;
@@ -42,10 +58,18 @@ type Row = RowDataPacket & {
   email: string;
   github: string;
   note: string | null;
+  // Các cột bổ sung cho đơn quốc tế: có thể chưa tồn tại nếu chưa chạy `npm run db:migrate` → luôn đọc có mặc định.
+  currency?: string | null;
+  country?: string | null;
+  marketing_opt_in?: number | null;
+  track_consent?: number | null;
+  paypal_order_id?: string | null;
+  paypal_capture_id?: string | null;
+  payer_email?: string | null;
   amount: number;
   paid_amount: number;
   paid_at: Date | null;
-  paid_via: "sepay" | "manual" | null;
+  paid_via: PaidVia | null;
   transaction_id: string | null;
   consent_at: Date | null;
   fulfill_state: FulfillState;
@@ -72,6 +96,7 @@ function toOrder(r: Row): Order {
     email: r.email,
     github: r.github,
     note: r.note ?? "",
+    currency: r.currency === "USD" ? "USD" : "VND",
     amount: Number(r.amount),
     paidAmount: Number(r.paid_amount),
     paidAt: iso(r.paid_at),
@@ -79,6 +104,12 @@ function toOrder(r: Row): Order {
     transactionId: r.transaction_id ?? undefined,
     createdAt: iso(r.created_at)!,
     consentAt: iso(r.consent_at),
+    country: r.country ?? undefined,
+    marketingOptIn: r.marketing_opt_in === 1,
+    trackConsent: r.track_consent == null ? true : r.track_consent === 1,
+    paypalOrderId: r.paypal_order_id ?? undefined,
+    paypalCaptureId: r.paypal_capture_id ?? undefined,
+    payerEmail: r.payer_email ?? undefined,
     fulfillState: r.fulfill_state,
     invite: r.invite_status
       ? { status: r.invite_status, message: r.invite_message ?? undefined, at: iso(r.invite_at) ?? "" }
@@ -110,10 +141,14 @@ export function summarizeOrder(o: Order) {
     phone: o.phone,
     email: o.email,
     github: o.github,
+    country: o.country ?? null,
+    currency: o.currency,
     amount: o.amount,
     paidAmount: o.paidAmount,
     paidVia: o.paidVia ?? null,
     paidAt: o.paidAt ?? null,
+    paypalOrderId: o.paypalOrderId ?? null,
+    payerEmail: o.payerEmail ?? null,
     createdAt: o.createdAt,
     fulfillState: o.fulfillState,
     githubInvite: o.invite?.status ?? null,
@@ -129,6 +164,19 @@ export function summarizeOrder(o: Order) {
 export async function createOrder(o: NewOrder): Promise<boolean> {
   const now = new Date();
   try {
+    if (o.currency && o.currency !== "VND") {
+      // Đơn quốc tế: dùng các cột bổ sung (cần đã chạy `npm run db:migrate`).
+      await db().execute(
+        `INSERT INTO orders (code, status, name, phone, email, github, note, currency, amount, country, marketing_opt_in, track_consent, consent_at, created_at)
+         VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          o.code, o.name, o.phone, o.email, o.github, o.note || null, o.currency, o.amount,
+          o.country ?? null, o.marketingOptIn ? 1 : 0, o.trackConsent === false ? 0 : 1, now, now,
+        ],
+      );
+      return true;
+    }
+    // Đơn VND giữ nguyên câu lệnh cũ để không phụ thuộc việc đã migrate hay chưa.
     await db().execute(
       `INSERT INTO orders (code, status, name, phone, email, github, note, amount, consent_at, created_at)
        VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -281,6 +329,130 @@ export async function getLatestTransaction(code: string) {
     gateway: (r.gateway as string | null) ?? undefined,
     reference: (r.reference_code as string | null) ?? undefined,
     content: (r.content as string | null) ?? undefined,
+    time: (r.tx_time as string | null) ?? undefined,
+  };
+}
+
+/* ------------------------------------------------------------ giao dịch PayPal */
+
+/** Thông tin một lần capture của PayPal đã được chuẩn hoá (xem lib/paypal.ts). */
+export type PaypalCaptureInfo = {
+  captureId: string;
+  paypalOrderId?: string;
+  status: string;
+  currency: string;
+  /** Đơn vị nhỏ nhất (cent). */
+  amountMinor: number;
+  payerEmail?: string;
+  time?: string;
+  raw?: unknown;
+};
+
+export type PaypalOutcome =
+  | { outcome: "duplicate"; order: Order } // capture này đã xử lý rồi
+  | { outcome: "paid"; order: Order } // khớp tiền → cần chạy các bước hậu thanh toán
+  | { outcome: "mismatch"; order: Order } // PayPal đã thu tiền nhưng sai loại tiền / số tiền so với đơn → cần xử lý tay
+  | { outcome: "extra"; order: Order } // tiền vào đơn đã paid
+  | { outcome: "cancelled"; order: Order }; // tiền vào đơn đã hủy
+
+export async function setPaypalOrderId(code: string, paypalOrderId: string) {
+  await db().execute("UPDATE orders SET paypal_order_id = ? WHERE code = ?", [paypalOrderId, code]);
+}
+
+export async function getOrderByPaypalOrderId(paypalOrderId: string): Promise<Order | null> {
+  const [rows] = await db().execute<Row[]>("SELECT * FROM orders WHERE paypal_order_id = ? LIMIT 1", [paypalOrderId]);
+  return rows[0] ? toOrder(rows[0]) : null;
+}
+
+/** Tìm đơn từ mã capture đã ghi sổ (dùng cho webhook hoàn tiền / tranh chấp). */
+export async function getOrderByCaptureId(captureId: string): Promise<Order | null> {
+  const [rows] = await db().execute<RowDataPacket[]>("SELECT order_code FROM paypal_transactions WHERE capture_id = ? LIMIT 1", [captureId]);
+  return rows[0] ? getOrder(String(rows[0].order_code)) : null;
+}
+
+/**
+ * Ghi nhận một lần capture THÀNH CÔNG (status COMPLETED) của PayPal vào đơn — trong một transaction DB:
+ * ghi sổ (chống trùng theo mã capture) + đổi trạng thái đơn. Khớp = cùng loại tiền và đúng số tiền của đơn.
+ * Capture ở trạng thái PENDING (PayPal đang rà soát) KHÔNG được gọi vào đây; PayPal sẽ gửi webhook COMPLETED sau.
+ */
+export async function applyPaypalCapture(code: string, cap: PaypalCaptureInfo): Promise<PaypalOutcome> {
+  const conn = await db().getConnection();
+  try {
+    await conn.beginTransaction();
+    try {
+      await conn.execute(
+        `INSERT INTO paypal_transactions (capture_id, order_code, paypal_order_id, amount, currency, status, payer_email, tx_time, raw, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          cap.captureId,
+          code,
+          cap.paypalOrderId ?? null,
+          cap.amountMinor,
+          cap.currency,
+          cap.status,
+          cap.payerEmail?.slice(0, 160) ?? null,
+          cap.time?.slice(0, 40) ?? null,
+          cap.raw === undefined ? null : JSON.stringify(cap.raw),
+          new Date(),
+        ],
+      );
+    } catch (e) {
+      await conn.rollback();
+      if (isDup(e)) return { outcome: "duplicate", order: (await getOrder(code))! };
+      throw e;
+    }
+
+    const [rows] = await conn.execute<Row[]>("SELECT * FROM orders WHERE code = ? FOR UPDATE", [code]);
+    const row = rows[0];
+    if (!row) {
+      await conn.rollback();
+      throw new Error(`Đơn ${code} không tồn tại`);
+    }
+
+    let outcome: PaypalOutcome["outcome"];
+    if (row.status === "pending" || row.status === "underpaid") {
+      const matches = cap.currency === (row.currency ?? "VND") && cap.amountMinor === Number(row.amount);
+      outcome = matches ? "paid" : "mismatch";
+      if (matches) {
+        await conn.execute(
+          `UPDATE orders SET status = 'paid', paid_amount = ?, paid_at = COALESCE(paid_at, UTC_TIMESTAMP()), paid_via = 'paypal',
+             transaction_id = ?, paypal_capture_id = ?, payer_email = COALESCE(?, payer_email)
+           WHERE code = ?`,
+          [cap.amountMinor, cap.captureId, cap.captureId, cap.payerEmail?.slice(0, 160) ?? null, code],
+        );
+      }
+    } else {
+      outcome = row.status === "paid" ? "extra" : "cancelled";
+    }
+    await conn.commit();
+
+    return { outcome, order: (await getOrder(code))! } as PaypalOutcome;
+  } catch (e) {
+    try {
+      await conn.rollback();
+    } catch {
+      /* đã rollback */
+    }
+    throw e;
+  } finally {
+    conn.release();
+  }
+}
+
+/** Giao dịch PayPal gần nhất của đơn (để điền vào thông báo khi hậu thanh toán chạy từ cron/admin). */
+export async function getLatestPaypalTransaction(code: string) {
+  const [rows] = await db().execute<RowDataPacket[]>(
+    "SELECT capture_id, amount, payer_email, tx_time FROM paypal_transactions WHERE order_code = ? ORDER BY created_at DESC LIMIT 1",
+    [code],
+  );
+  const r = rows[0];
+  if (!r) return undefined;
+  return {
+    id: String(r.capture_id),
+    amount: Number(r.amount),
+    gateway: "PayPal",
+    reference: String(r.capture_id),
+    content: (r.payer_email as string | null) ?? undefined,
     time: (r.tx_time as string | null) ?? undefined,
   };
 }

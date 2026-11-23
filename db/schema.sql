@@ -26,13 +26,22 @@ CREATE TABLE IF NOT EXISTS orders (
   github             VARCHAR(60)  NOT NULL,
   note               TEXT         NULL,
 
-  -- tiền
-  amount             INT UNSIGNED NOT NULL COMMENT 'Số tiền cần thanh toán (VND)',
+  -- tiền (theo đơn vị nhỏ nhất của `currency`: VND = đồng, USD = cent, vd 7900 = $79.00)
+  currency           CHAR(3)      NOT NULL DEFAULT 'VND' COMMENT 'VND = trang tiếng Việt (SePay), USD = trang /global (PayPal)',
+  amount             INT UNSIGNED NOT NULL COMMENT 'Số tiền cần thanh toán (đơn vị nhỏ nhất của currency)',
   paid_amount        INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Số tiền đã nhận (cộng dồn)',
   paid_at            DATETIME     NULL,
-  paid_via           ENUM('sepay','manual') NULL COMMENT 'sepay=tự động, manual=admin xác nhận tay',
-  transaction_id     VARCHAR(64)  NULL COMMENT 'Mã giao dịch SePay gần nhất',
+  paid_via           ENUM('sepay','manual','paypal') NULL COMMENT 'sepay=tự động, paypal=PayPal, manual=admin xác nhận tay',
+  transaction_id     VARCHAR(64)  NULL COMMENT 'Mã giao dịch SePay / mã capture PayPal gần nhất',
   consent_at         DATETIME     NULL,
+
+  -- chỉ dùng cho đơn quốc tế (PayPal)
+  country            CHAR(5)      NULL COMMENT 'Mã quốc gia khách chọn (ISO 2 ký tự hoặc OTHER)',
+  marketing_opt_in   TINYINT(1)   NOT NULL DEFAULT 0 COMMENT 'Khách đồng ý nhận email giới thiệu',
+  track_consent      TINYINT(1)   NOT NULL DEFAULT 1 COMMENT '0 = khách chưa đồng ý cookie đo lường: không báo Meta Conversions API',
+  paypal_order_id    VARCHAR(40)  NULL,
+  paypal_capture_id  VARCHAR(40)  NULL,
+  payer_email        VARCHAR(160) NULL COMMENT 'Email tài khoản PayPal của người trả tiền',
 
   -- các bước sau thanh toán (hệ thống tự cập nhật)
   fulfill_state      ENUM('pending','processing','done') NOT NULL DEFAULT 'pending'
@@ -54,7 +63,8 @@ CREATE TABLE IF NOT EXISTS orders (
   PRIMARY KEY (code),
   KEY idx_status_created (status, created_at),
   KEY idx_fulfill (status, fulfill_state),
-  KEY idx_email (email)
+  KEY idx_email (email),
+  KEY idx_paypal_order (paypal_order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Sổ giao dịch ngân hàng nhận từ SePay (kể cả giao dịch không khớp đơn). Khoá chính = id giao dịch SePay
@@ -70,6 +80,23 @@ CREATE TABLE IF NOT EXISTS sepay_transactions (
   raw            JSON         NULL,
   created_at     DATETIME     NOT NULL,
   PRIMARY KEY (id),
+  KEY idx_order (order_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Sổ giao dịch PayPal (mỗi lần capture thành công = một dòng). Khoá chính = mã capture của PayPal để mỗi giao dịch
+-- chỉ được xử lý một lần dù khách bấm lại hay PayPal gửi webhook nhiều lần.
+CREATE TABLE IF NOT EXISTS paypal_transactions (
+  capture_id       VARCHAR(40)  NOT NULL,
+  order_code       VARCHAR(20)  NOT NULL,
+  paypal_order_id  VARCHAR(40)  NULL,
+  amount           BIGINT       NOT NULL COMMENT 'Đơn vị nhỏ nhất (cent)',
+  currency         CHAR(3)      NOT NULL,
+  status           VARCHAR(24)  NOT NULL,
+  payer_email      VARCHAR(160) NULL,
+  tx_time          VARCHAR(40)  NULL COMMENT 'Thời gian PayPal ghi nhận (ISO 8601)',
+  raw              JSON         NULL,
+  created_at       DATETIME     NOT NULL,
+  PRIMARY KEY (capture_id),
   KEY idx_order (order_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

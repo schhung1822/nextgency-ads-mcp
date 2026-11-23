@@ -1,7 +1,7 @@
 import { after, NextResponse } from "next/server";
 import { fulfillOrder } from "@/lib/fulfill";
 import { notifyDuplicate, notifyUnderpaid, notifyUnmatched, type PaidTx } from "@/lib/notify";
-import { applySepayPayment, findOrderByCodes, recordUnmatchedTransaction } from "@/lib/orders";
+import { applySepayPayment, findOrderByCodes, isGlobalOrder, recordUnmatchedTransaction } from "@/lib/orders";
 import { extractCandidateCodes, verifyWebhookAuth, type SepayWebhookPayload } from "@/lib/sepay";
 
 const ok = () => NextResponse.json({ success: true });
@@ -62,6 +62,17 @@ export async function POST(request: Request) {
     if (!order) {
       // Ghi sổ để không xử lý lại khi SePay gọi lại; chỉ báo Lark ở lần đầu.
       if (await recordUnmatchedTransaction(payload)) await safe(notifyUnmatched(codes, tx), "unmatched");
+      return ok();
+    }
+
+    // Đơn quốc tế thanh toán bằng PayPal (USD) — không nhận chuyển khoản VND vào đơn này.
+    if (isGlobalOrder(order)) {
+      if (await recordUnmatchedTransaction(payload)) {
+        await safe(
+          notifyUnmatched(codes, tx, `Tiền VND vào đơn quốc tế ${order.code} (thanh toán bằng PayPal) — cần đối soát/hoàn tiền thủ công.`),
+          "global-order",
+        );
+      }
       return ok();
     }
 

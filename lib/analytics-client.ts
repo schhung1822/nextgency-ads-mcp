@@ -60,8 +60,8 @@ export function trackRegistrationComplete(orderCode: string) {
   toMeta("CompleteRegistration", { content_name: SITE.productName, status: true }, eventId);
 }
 
-/** Hệ thống đã nhận đủ tiền cho đơn. */
-export function trackPurchaseComplete(orderCode: string, amount: number) {
+/** Hệ thống đã nhận đủ tiền cho đơn. `amount` tính theo đơn vị chính của tiền tệ (VND: đồng, USD: đô la). */
+export function trackPurchaseComplete(orderCode: string, amount: number, currency: "VND" | "USD" = "VND") {
   if (!once(`purchase:${orderCode}`)) return;
   const eventId = purchaseEventId(orderCode);
   toDataLayer({ ecommerce: null }); // xoá ecommerce cũ trước khi đẩy cái mới (khuyến nghị của GA4)
@@ -71,13 +71,13 @@ export function trackPurchaseComplete(orderCode: string, amount: number) {
     ecommerce: {
       transaction_id: orderCode,
       value: amount,
-      currency: "VND",
+      currency,
       items: [{ ...ITEM, price: amount, quantity: 1 }],
     },
   });
   toMeta(
     "Purchase",
-    { value: amount, currency: "VND", content_name: SITE.productName, content_type: "product", content_ids: [ITEM.item_id] },
+    { value: amount, currency, content_name: SITE.productName, content_type: "product", content_ids: [ITEM.item_id] },
     eventId,
   );
 }

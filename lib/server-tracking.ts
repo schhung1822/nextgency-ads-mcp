@@ -2,8 +2,8 @@ import "server-only";
 import type { RowDataPacket } from "mysql2/promise";
 import { db } from "@/lib/db";
 import { metaCapiConfigured, sendMetaEvent } from "@/lib/meta-capi";
-import type { Order } from "@/lib/orders";
-import { SITE } from "@/lib/site";
+import { isGlobalOrder, type Order } from "@/lib/orders";
+import { GLOBAL, SITE } from "@/lib/site";
 import { purchaseEventId, registrationEventId, type MetaBrowserIds } from "@/lib/tracking";
 
 /**
@@ -52,6 +52,9 @@ async function loadOrderTracking(code: string): Promise<OrderTrackingContext> {
   }
 }
 
+/** Trang mà khách đã đặt hàng (để Meta gắn đúng nguồn sự kiện). */
+const sourceUrlOf = (o: Order) => (isGlobalOrder(o) ? `${SITE.url.replace(/\/$/, "")}${GLOBAL.path}` : SITE.url);
+
 const userOf = (o: Order, ctx: OrderTrackingContext) => ({
   email: o.email,
   phone: o.phone,
@@ -65,14 +68,15 @@ const userOf = (o: Order, ctx: OrderTrackingContext) => ({
 
 /** Hoàn tất đăng ký: đơn vừa được tạo (chưa thanh toán). */
 export async function reportRegistration(order: Order, ctx: OrderTrackingContext): Promise<void> {
-  if (!metaCapiConfigured) return;
+  // Khách quốc tế chưa đồng ý cookie đo lường/quảng cáo thì không báo gì về Meta.
+  if (!metaCapiConfigured || !order.trackConsent) return;
   try {
     await saveOrderTracking(order.code, ctx);
     await sendMetaEvent({
       name: "CompleteRegistration",
       eventId: registrationEventId(order.code),
       eventTime: Math.floor(new Date(order.createdAt).getTime() / 1000),
-      sourceUrl: SITE.url,
+      sourceUrl: sourceUrlOf(order),
       user: userOf(order, ctx),
       custom: { content_name: SITE.productName, status: true },
     });
@@ -83,18 +87,19 @@ export async function reportRegistration(order: Order, ctx: OrderTrackingContext
 
 /** Hoàn tất thanh toán: đơn đã nhận đủ tiền. Gọi nhiều lần vẫn an toàn (cùng event_id nên Meta gộp lại). */
 export async function reportPurchase(order: Order): Promise<void> {
-  if (!metaCapiConfigured) return;
+  if (!metaCapiConfigured || !order.trackConsent) return;
   try {
     const ctx = await loadOrderTracking(order.code);
     await sendMetaEvent({
       name: "Purchase",
       eventId: purchaseEventId(order.code),
       eventTime: order.paidAt ? Math.floor(new Date(order.paidAt).getTime() / 1000) : undefined,
-      sourceUrl: SITE.url,
+      sourceUrl: sourceUrlOf(order),
       user: userOf(order, ctx),
       custom: {
-        value: order.amount,
-        currency: "VND",
+        // Đơn USD lưu theo cent → đổi về đô la cho Meta.
+        value: isGlobalOrder(order) ? order.amount / 100 : order.amount,
+        currency: order.currency,
         content_name: SITE.productName,
         content_type: "product",
         content_ids: [ITEM_ID],

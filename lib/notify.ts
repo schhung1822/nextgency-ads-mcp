@@ -1,17 +1,22 @@
 import "server-only";
-import { sendLarkCard, type LarkField } from "@/lib/lark";
+import { sendLarkCard, type LarkField, type LarkTone } from "@/lib/lark";
 import type { InviteResult } from "@/lib/github";
-import type { Order } from "@/lib/orders";
-import { formatVnd } from "@/lib/site";
+import { isGlobalOrder, type Order } from "@/lib/orders";
+import { formatMoney, formatVnd } from "@/lib/site";
 
 const vnTime = (iso: string) =>
   new Date(iso).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false });
 
+/** Số tiền của đơn theo đúng loại tiền (VND hoặc USD). */
+const money = (order: Order, minor: number = order.amount) => formatMoney(minor, order.currency, "vi");
+
 function customerFields(order: Order): LarkField[] {
   return [
     { label: "Khách hàng", value: order.name },
-    { label: "Số điện thoại", value: order.phone },
+    // Khách quốc tế không có số Zalo — liên hệ qua email.
+    ...(order.phone ? [{ label: "Số điện thoại", value: order.phone }] : []),
     { label: "Email", value: order.email },
+    ...(order.country ? [{ label: "Quốc gia", value: order.country }] : []),
     { label: "GitHub (mời vào repo)", value: order.github || "— (khách chưa cung cấp)" },
     ...(order.note ? [{ label: "Ghi chú", value: order.note, short: false }] : []),
   ];
@@ -46,16 +51,20 @@ function inviteField(invite: InviteResult | undefined, hasGithub: boolean): Lark
 export async function notifyPaid(order: Order, tx?: PaidTx, extra?: string) {
   const hasGithub = Boolean(order.github);
   const needManual = hasGithub && (order.invite?.status === "error" || order.invite?.status === "skipped" || !order.invite);
+  const global = isGlobalOrder(order);
+  // Khách quốc tế liên hệ qua email (không có Zalo); khách trong nước qua Zalo.
+  const channel = global ? `email (${order.email})` : `Zalo (${order.phone})`;
+  const tag = global ? "[GLOBAL · PayPal] " : "";
   return sendLarkCard({
     title: !hasGithub
-      ? "✅ Thanh toán thành công — LIÊN HỆ KHÁCH QUA ZALO (chưa có GitHub)"
+      ? `✅ ${tag}Thanh toán thành công — LIÊN HỆ KHÁCH QUA ${global ? "EMAIL" : "ZALO"} (chưa có GitHub)`
       : needManual
-        ? "✅ Thanh toán thành công — CẦN MỜI GITHUB TAY"
-        : "✅ Thanh toán thành công — Ads MCP Simple",
+        ? `✅ ${tag}Thanh toán thành công — CẦN MỜI GITHUB TAY`
+        : `✅ ${tag}Thanh toán thành công — Ads MCP Simple`,
     tone: needManual || !hasGithub ? "orange" : "green",
     fields: [
       { label: "Mã đơn", value: order.code },
-      { label: "Đã nhận", value: formatVnd(order.paidAmount || order.amount) },
+      { label: "Đã nhận", value: money(order, order.paidAmount || order.amount) },
       ...customerFields(order),
       inviteField(order.invite, hasGithub),
       ...(order.paidVia === "manual" || !tx
@@ -65,21 +74,49 @@ export async function notifyPaid(order: Order, tx?: PaidTx, extra?: string) {
           ]
         : []),
       ...(tx
-        ? [
-            { label: "Ngân hàng", value: tx.gateway ?? "—" },
-            { label: "Mã giao dịch", value: String(tx.reference || tx.id) },
-            { label: "Thời gian GD", value: tx.time ?? vnTime(new Date().toISOString()) },
-            { label: "Nội dung CK", value: tx.content ?? "—", short: false },
-          ]
+        ? global
+          ? [
+              { label: "Cổng thanh toán", value: "PayPal" },
+              { label: "Mã giao dịch (capture)", value: String(tx.reference || tx.id) },
+              { label: "Thời gian GD", value: tx.time ?? "—" },
+              { label: "Email PayPal", value: tx.content ?? order.payerEmail ?? "—" },
+            ]
+          : [
+              { label: "Ngân hàng", value: tx.gateway ?? "—" },
+              { label: "Mã giao dịch", value: String(tx.reference || tx.id) },
+              { label: "Thời gian GD", value: tx.time ?? vnTime(new Date().toISOString()) },
+              { label: "Nội dung CK", value: tx.content ?? "—", short: false },
+            ]
         : []),
+      ...(global ? [{ label: "Đồng ý email giới thiệu", value: order.marketingOptIn ? "Có" : "Không" }] : []),
     ],
     footer:
       extra ??
       (!hasGithub
-        ? `Khách đã được thông báo sẽ có người liên hệ qua Zalo (${order.phone}). Việc cần làm: liên hệ khách, hướng dẫn tạo tài khoản GitHub rồi mời vào repo (quyền Read) và hẹn lịch setup.`
+        ? `Khách đã được thông báo sẽ có người liên hệ qua ${global ? "email" : "Zalo"} (${global ? order.email : order.phone}). Việc cần làm: liên hệ khách, hướng dẫn tạo tài khoản GitHub rồi mời vào repo (quyền Read) và hẹn lịch setup.`
         : needManual
-          ? `Việc cần làm: mời tài khoản GitHub của khách vào repo (quyền Read), rồi liên hệ khách qua Zalo (${order.phone}).`
-          : `Khách đã được thông báo sẽ có người liên hệ qua Zalo (${order.phone}) — hãy liên hệ khách để hẹn lịch setup.`),
+          ? `Việc cần làm: mời tài khoản GitHub của khách vào repo (quyền Read), rồi liên hệ khách qua ${channel}.`
+          : `Khách đã được thông báo sẽ có người liên hệ qua ${channel} — hãy liên hệ khách để hẹn lịch setup.`),
+  });
+}
+
+/** Sự cố / việc cần người xử lý với đơn PayPal (sai số tiền, tiền thừa, hoàn tiền, tranh chấp…). */
+export async function notifyPaypalIssue(opts: {
+  title: string;
+  tone?: LarkTone;
+  order?: Order | null;
+  fields?: LarkField[];
+  footer: string;
+}) {
+  const o = opts.order;
+  return sendLarkCard({
+    title: opts.title,
+    tone: opts.tone ?? "orange",
+    fields: [
+      ...(o ? [{ label: "Mã đơn", value: o.code }, { label: "Số tiền đơn", value: money(o) }, ...customerFields(o)] : []),
+      ...(opts.fields ?? []),
+    ],
+    footer: opts.footer,
   });
 }
 
@@ -89,9 +126,9 @@ export async function notifyUnderpaid(order: Order, tx: PaidTx) {
     tone: "orange",
     fields: [
       { label: "Mã đơn", value: order.code },
-      { label: "Cần thanh toán", value: formatVnd(order.amount) },
-      { label: "Đã nhận (cộng dồn)", value: formatVnd(order.paidAmount) },
-      { label: "Còn thiếu", value: formatVnd(Math.max(order.amount - order.paidAmount, 0)) },
+      { label: "Cần thanh toán", value: money(order) },
+      { label: "Đã nhận (cộng dồn)", value: money(order, order.paidAmount) },
+      { label: "Còn thiếu", value: money(order, Math.max(order.amount - order.paidAmount, 0)) },
       ...customerFields(order),
       { label: "Nội dung CK", value: tx.content ?? "—", short: false },
     ],
