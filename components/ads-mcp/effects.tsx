@@ -8,8 +8,8 @@ import ShinyText from "@/components/react-bits/ShinyText";
 /** Chuyển động hero cùng hệ React Bits đang dùng cho trang chủ, đổi sang bảng màu Ads MCP. */
 export function AdsHeroAurora() {
   return (
-    <div className="pointer-events-none absolute inset-0 -z-10 opacity-80" aria-hidden>
-      <Aurora colorStops={["#0b8f80", "#2ee6c9", "#0a3f48"]} amplitude={1.05} blend={0.62} speed={0.65} glow={0.72} dpr={1.5} />
+    <div className="pointer-events-none absolute inset-0 -z-10 opacity-40 sm:opacity-65 lg:opacity-80" aria-hidden>
+      <Aurora colorStops={["#0b8f80", "#2ee6c9", "#0a3f48"]} amplitude={1.05} blend={0.62} speed={0.65} glow={0.6} dpr={1.5} />
     </div>
   );
 }

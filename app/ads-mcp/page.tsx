@@ -188,8 +188,8 @@ export default function AdsMcpPage() {
   return (
     <div className="min-h-dvh overflow-hidden bg-[#06110f] text-[#e8f4f1]">
       <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden" aria-hidden>
-        <div className="absolute -top-72 -right-56 size-[44rem] rounded-full bg-[#0e6b60]/40 blur-[120px]" />
-        <div className="absolute -bottom-72 -left-56 size-[38rem] rounded-full bg-[#0a3f48]/50 blur-[120px]" />
+        <div className="absolute -top-36 -right-24 size-72 rounded-full bg-[#0e6b60]/20 blur-[80px] sm:-top-72 sm:-right-56 sm:size-[44rem] sm:bg-[#0e6b60]/40 sm:blur-[120px]" />
+        <div className="absolute -bottom-36 -left-24 size-64 rounded-full bg-[#0a3f48]/20 blur-[80px] sm:-bottom-72 sm:-left-56 sm:size-[38rem] sm:bg-[#0a3f48]/50 sm:blur-[120px]" />
         <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(46,230,201,.055)_1px,transparent_1px),linear-gradient(90deg,rgba(46,230,201,.055)_1px,transparent_1px)] [background-size:52px_52px] [mask-image:radial-gradient(ellipse_at_50%_12%,black,transparent_68%)]" />
       </div>
 
@@ -206,7 +206,7 @@ export default function AdsMcpPage() {
       </header>
 
       <main id="top" className="relative z-10">
-        <section className="relative isolate overflow-hidden pb-20 pt-16 sm:pb-28 sm:pt-24">
+        <section className="relative isolate overflow-hidden pb-20 pt-24 sm:pb-28 sm:pt-28">
           <AdsHeroAurora />
           <Container className="grid items-center gap-12 lg:grid-cols-[1.04fr_.96fr] lg:gap-10">
             <div>
