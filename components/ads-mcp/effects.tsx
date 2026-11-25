@@ -17,9 +17,9 @@ export function AdsHeroAurora() {
 export function AdsHeroTitle() {
   return (
     <h1 className="mt-5 max-w-2xl text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-[3.5rem] lg:leading-[1.06]">
-      <BlurText text="Ra lệnh quảng cáo." animateBy="words" trigger="load" color="#ffffff" className="" />
+      <BlurText text="Ra lệnh một câu," animateBy="words" trigger="load" color="#ffffff" className="" />
       <GradientText colors={["#2ee6c9", "#b6fff0", "#16c4ac", "#2ee6c9"]} animationSpeed={6}>
-        AI lo phần còn lại.
+        AI chạy quảng cáo Facebook.
       </GradientText>
     </h1>
   );

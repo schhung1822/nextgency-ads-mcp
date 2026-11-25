@@ -37,6 +37,9 @@ async function upgradeOrders() {
     ["paypal_order_id", "VARCHAR(40) NULL"],
     ["paypal_capture_id", "VARCHAR(40) NULL"],
     ["payer_email", "VARCHAR(160) NULL"],
+    ["business", "VARCHAR(40) NULL AFTER note"],
+    ["ads_runner", "VARCHAR(40) NULL AFTER business"],
+    ["ad_budget", "VARCHAR(40) NULL AFTER ads_runner"],
   ];
   for (const [name, ddl] of add) {
     if (have.has(name)) continue;

@@ -37,6 +37,10 @@ export type Order = {
   paypalOrderId?: string;
   paypalCaptureId?: string;
   payerEmail?: string;
+  // Đơn đăng ký tư vấn Ads MCP (trang /ads-mcp) — trống ("") ở đơn trang chủ.
+  business?: string;
+  adsRunner?: string;
+  adBudget?: string;
   fulfillState: FulfillState;
   invite?: InviteResult;
   larkNotifiedAt?: string;
@@ -45,7 +49,10 @@ export type Order = {
 };
 
 export type NewOrder = Pick<Order, "code" | "name" | "phone" | "email" | "github" | "note" | "amount"> &
-  Partial<Pick<Order, "currency" | "country" | "marketingOptIn" | "trackConsent">>;
+  Partial<Pick<Order, "currency" | "country" | "marketingOptIn" | "trackConsent" | "business" | "adsRunner" | "adBudget">> & {
+    /** "ads-mcp" = đơn đăng ký tư vấn ở /ads-mcp — ghi kèm business/adsRunner/adBudget (cần đã chạy `npm run db:migrate`). */
+    plan?: "default" | "ads-mcp";
+  };
 
 /** Đơn của trang quốc tế (không phải VND). Dùng để chọn nội dung thông báo / sự kiện đo lường phù hợp. */
 export const isGlobalOrder = (o: Pick<Order, "currency">) => o.currency !== "VND";
@@ -66,6 +73,10 @@ type Row = RowDataPacket & {
   paypal_order_id?: string | null;
   paypal_capture_id?: string | null;
   payer_email?: string | null;
+  // Đơn đăng ký tư vấn Ads MCP: có thể chưa tồn tại nếu chưa chạy `npm run db:migrate` → luôn đọc có mặc định.
+  business?: string | null;
+  ads_runner?: string | null;
+  ad_budget?: string | null;
   amount: number;
   paid_amount: number;
   paid_at: Date | null;
@@ -110,6 +121,9 @@ function toOrder(r: Row): Order {
     paypalOrderId: r.paypal_order_id ?? undefined,
     paypalCaptureId: r.paypal_capture_id ?? undefined,
     payerEmail: r.payer_email ?? undefined,
+    business: r.business ?? undefined,
+    adsRunner: r.ads_runner ?? undefined,
+    adBudget: r.ad_budget ?? undefined,
     fulfillState: r.fulfill_state,
     invite: r.invite_status
       ? { status: r.invite_status, message: r.invite_message ?? undefined, at: iso(r.invite_at) ?? "" }
@@ -149,6 +163,9 @@ export function summarizeOrder(o: Order) {
     paidAt: o.paidAt ?? null,
     paypalOrderId: o.paypalOrderId ?? null,
     payerEmail: o.payerEmail ?? null,
+    business: o.business ?? null,
+    adsRunner: o.adsRunner ?? null,
+    adBudget: o.adBudget ?? null,
     createdAt: o.createdAt,
     fulfillState: o.fulfillState,
     githubInvite: o.invite?.status ?? null,
@@ -164,6 +181,18 @@ export function summarizeOrder(o: Order) {
 export async function createOrder(o: NewOrder): Promise<boolean> {
   const now = new Date();
   try {
+    if (o.plan === "ads-mcp") {
+      // Đăng ký tư vấn Ads MCP (trang /ads-mcp): cần đã chạy `npm run db:migrate` để có cột business/ads_runner/ad_budget.
+      await db().execute(
+        `INSERT INTO orders (code, status, name, phone, email, github, note, amount, business, ads_runner, ad_budget, consent_at, created_at)
+         VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          o.code, o.name, o.phone, o.email, o.github, o.note || null, o.amount,
+          o.business || null, o.adsRunner || null, o.adBudget || null, now, now,
+        ],
+      );
+      return true;
+    }
     if (o.currency && o.currency !== "VND") {
       // Đơn quốc tế: dùng các cột bổ sung (cần đã chạy `npm run db:migrate`).
       await db().execute(

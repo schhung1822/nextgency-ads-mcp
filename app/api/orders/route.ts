@@ -3,7 +3,7 @@ import { createOrder, getOrder, isPersistent, rateLimit, type Order } from "@/li
 import { orderInputSchema } from "@/lib/order-schema";
 import { buildPaymentInfo, generateOrderCode, isSepayConfigured } from "@/lib/sepay";
 import { reportRegistration } from "@/lib/server-tracking";
-import { SITE } from "@/lib/site";
+import { ADS_MCP, SITE } from "@/lib/site";
 import { sanitizeMetaIds } from "@/lib/tracking";
 import { deliverOrderEvent } from "@/lib/webhooks";
 
@@ -54,17 +54,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const { website: _honeypot, consent: _consent, ...data } = parsed.data;
+  const { website: _honeypot, consent: _consent, plan, ...data } = parsed.data;
   void _honeypot;
   void _consent;
 
-  // Giá luôn lấy từ server.
-  const amount = SITE.price;
+  // Giá luôn lấy từ server theo gói đã chọn — client không gửi giá lên.
+  const amount = plan === "ads-mcp" ? ADS_MCP.price : SITE.price;
   let code: string | null = null;
   try {
     for (let i = 0; i < 5 && !code; i++) {
       const candidate = generateOrderCode();
-      if (await createOrder({ ...data, code: candidate, amount })) code = candidate;
+      if (await createOrder({ ...data, plan, code: candidate, amount })) code = candidate;
     }
   } catch (e) {
     console.error("[orders] lỗi DB khi tạo đơn", e);

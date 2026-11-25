@@ -24,6 +24,14 @@ export const SITE = {
   },
 } as const;
 
+/**
+ * Gói "Phòng marketing AI" ở trang /ads-mcp — thuê theo tháng, khác sản phẩm/giá với SITE.price ở trang chủ.
+ * Server luôn dùng giá này khi tạo đơn có plan "ads-mcp" (xem app/api/orders/route.ts) — client không gửi giá lên.
+ */
+export const ADS_MCP = {
+  price: 4_000_000,
+} as const;
+
 /** Link mở Zalo của Nextgency (NEXT_PUBLIC_CONTACT_ZALO có thể là link zalo.me hoặc số điện thoại). Trống = chưa cấu hình. */
 export function zaloHref(): string {
   const z = SITE.contact.zalo.trim();
