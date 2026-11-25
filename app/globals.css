@@ -158,6 +158,19 @@
   }
 }
 
+/* Mũi tên gợi ý "Vuốt để xem thêm" ở trang /auto-ads-ai nhích nhẹ sang phải */
+@keyframes nudge-x {
+  50% {
+    transform: translateX(5px);
+  }
+}
+@utility nudge-x {
+  animation: nudge-x 1.2s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 /* Gradient thương hiệu — lấy từ nextgency.vn */
 @utility bg-brand-hero {
   background:

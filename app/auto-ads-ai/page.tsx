@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import {
-  ArrowDownIcon,
   BarChart3Icon,
   CheckIcon,
   ChevronDownIcon,
   CircleCheckBigIcon,
   ClipboardCheckIcon,
-  EyeIcon,
   HistoryIcon,
   LockKeyholeIcon,
-  MegaphoneIcon,
   MessageCircleIcon,
-  MessageSquareIcon,
   MousePointerClickIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  ThumbsUpIcon,
   TrendingUpIcon,
   WalletIcon,
   ZapIcon,
@@ -27,6 +22,7 @@ import { AdsHeroAurora, AdsHeroTitle, AdsSectionTitle, AdsShinyBadge } from "@/c
 import { ChatGptMark, ClaudeMark, FacebookMark, GoogleDriveMark, InstagramMark, MessengerMark, TelegramMark } from "@/components/ads-mcp/brand-icons";
 import { RegisterButton as ContactButton, RegistrationCard } from "@/components/ads-mcp/checkout";
 import { WorkflowDemo } from "@/components/ads-mcp/workflow-demo";
+import { FeatureCards } from "@/components/ads-mcp/feature-cards";
 import { FunnelChart } from "@/components/ads-mcp/funnel-chart";
 import { VideoBoard } from "@/components/ads-mcp/video-board";
 import { IndustryTabsDemo } from "@/components/ads-mcp/industry-tabs";
@@ -43,134 +39,6 @@ const eraRows = [
   { year: "Trước", icon: HistoryIcon, text: "Thuê người chạy, cuối tuần mới biết số" },
   { year: "Hôm nay", icon: MousePointerClickIcon, text: "Tự mày mò trình quản lý quảng cáo" },
   { year: "2027", icon: SparklesIcon, text: "Ra lệnh cho AI. AI làm, tự kiểm tra, báo lại", active: true },
-];
-
-const features = [
-  {
-    title: "Bài đang hot thành quảng cáo",
-    tag: "Lên trong vài phút",
-    tagBg: "#dcefea",
-    tagColor: "#0b8f80",
-    preview: (
-      <div className="flex flex-col items-center gap-2">
-        <div className="w-full rounded-xl border border-[#edf0f2] p-2">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#17211f]"><span className="size-5 rounded-full bg-[#e5eeec]" />Bài hôm qua</div>
-          <div className="mt-1.5 h-12 rounded-lg bg-gradient-to-br from-[#bfe9e1] to-[#5fc7b5]" />
-          <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-[#5c6b68]"><ThumbsUpIcon className="size-3 text-[#1877f2]" />1.240</div>
-        </div>
-        <ArrowDownIcon className="size-3.5 text-[#96b8b1]" />
-        <div className="flex w-full items-center justify-between rounded-xl bg-[#f3f8f7] px-2.5 py-2">
-          <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#17211f]"><FacebookMark className="size-4" />Quảng cáo tin nhắn</span>
-          <span className="shrink-0 rounded-full bg-[#fceed6] px-1.5 py-0.5 text-[9px] font-bold text-[#b9741a]">Chờ duyệt</span>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Kho ảnh, video thành loạt quảng cáo",
-    tag: "Một lượt là xong",
-    tagBg: "#ece6fa",
-    tagColor: "#7b5cc4",
-    preview: (
-      <div className="flex flex-col items-center gap-2.5">
-        <div className="grid w-full grid-cols-3 gap-1.5">
-          {[["#bfe9e1", "#5fc7b5"], ["#d9ccf5", "#a68be2"], ["#fce3c2", "#e9a65a"], ["#f7d3ce", "#e08575"], ["#bcd9f7", "#5b9ee0"], ["#e4e9ec", "#aab4ba"]].map(([from, to], i) => (
-            <div key={i} className="aspect-square rounded-lg" style={{ backgroundImage: `linear-gradient(135deg, ${from}, ${to})` }} />
-          ))}
-        </div>
-        <span className="rounded-full bg-[#7b5cc4] px-2.5 py-1 text-[11px] font-bold text-white">12 mẫu quảng cáo</span>
-      </div>
-    ),
-  },
-  {
-    title: "Quảng cáo cho buổi livestream",
-    tag: "Đúng lúc đang live",
-    tagBg: "#fbe4e2",
-    tagColor: "#d2412f",
-    preview: (
-      <div className="flex flex-col gap-2 rounded-xl bg-[#17211f] p-2.5 text-white">
-        <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 rounded bg-[#e5243b] px-1.5 py-0.5 text-[10px] font-black"><span className="size-1.5 animate-pulse rounded-full bg-white" />LIVE</span>
-          <span className="flex items-center gap-1 text-[10px] font-semibold text-white/80"><EyeIcon className="size-3" />1.2K đang xem</span>
-        </div>
-        <div className="flex h-11 items-center justify-center rounded-lg bg-white/10 text-[10px] text-white/50">Video trực tiếp</div>
-        <p className="flex items-center gap-1.5 rounded-lg bg-white/10 px-2 py-1.5 text-[10px] font-semibold">
-          <MegaphoneIcon className="size-3 shrink-0 text-[#2ee6c9]" />Quảng cáo đang đẩy người vào xem
-        </p>
-      </div>
-    ),
-  },
-  {
-    title: "Khách nhắn là có lời chào sẵn",
-    tag: "Không bỏ lỡ khách",
-    tagBg: "#dceefc",
-    tagColor: "#1877f2",
-    preview: (
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#17211f]"><FacebookMark className="size-4" />Khách vừa nhắn từ quảng cáo</div>
-        <p className="w-fit rounded-xl rounded-tl-sm bg-[#f3f8f7] px-2.5 py-1.5 text-[11px] text-[#17211f]">Chào bạn, bạn cần xem giá hay tư vấn size ạ?</p>
-        <div className="flex gap-1.5">
-          <span className="rounded-full border border-[#e5eeec] px-2 py-1 text-[10px] font-semibold text-[#17211f]">Xem giá</span>
-          <span className="rounded-full border border-[#e5eeec] px-2 py-1 text-[10px] font-semibold text-[#17211f]">Tư vấn size</span>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Tối ưu mỗi ngày",
-    tag: "Bớt đốt tiền",
-    tagBg: "#def6e9",
-    tagColor: "#22a06b",
-    preview: (
-      <div className="flex items-end justify-center gap-4 pt-2">
-        <div className="text-center"><span className="mb-1 block text-[10px] font-black text-[#22a06b]">+20%</span><div className="h-14 w-6 rounded-t-md bg-gradient-to-t from-[#0b8f80] to-[#34eccf]" /><span className="mt-1 block text-[9px] font-semibold text-[#5c6b68]">Mẫu A</span></div>
-        <div className="text-center"><span className="mb-1 block text-[10px] font-black text-[#d2412f]">Tắt</span><div className="h-5 w-6 rounded-t-md bg-[#f3d9d6]" /><span className="mt-1 block text-[9px] font-semibold text-[#5c6b68]">Mẫu B</span></div>
-        <div className="text-center"><span className="mb-1 block text-[10px] font-black text-[#5c6b68]">Giữ</span><div className="h-9 w-6 rounded-t-md bg-[#d5dbda]" /><span className="mt-1 block text-[9px] font-semibold text-[#5c6b68]">Mẫu C</span></div>
-      </div>
-    ),
-  },
-  {
-    title: "Đọc bình luận, biết khách hỏi gì",
-    tag: "Làm đúng nội dung",
-    tagBg: "#ece6fa",
-    tagColor: "#7b5cc4",
-    preview: (
-      <div className="flex flex-col gap-1.5">
-        <p className="w-fit rounded-xl rounded-tl-sm bg-[#f3f8f7] px-2.5 py-1.5 text-[11px] text-[#17211f]">Còn size M không shop?</p>
-        <p className="ml-auto w-fit rounded-xl rounded-tr-sm bg-[#f3f8f7] px-2.5 py-1.5 text-[11px] text-[#17211f]">Giá bao nhiêu vậy ạ?</p>
-        <p className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-[#7b5cc4]"><MessageSquareIcon className="size-3 shrink-0" />Khách hỏi nhiều nhất: giá, size</p>
-      </div>
-    ),
-  },
-  {
-    title: "Báo cáo 8h sáng",
-    tag: "Biết có lời không",
-    tagBg: "#fceed6",
-    tagColor: "#b9741a",
-    preview: (
-      <div className="flex flex-col items-center justify-center gap-1.5 py-2 text-center">
-        <p className="text-2xl font-black text-[#17211f]">08:00</p>
-        <div className="flex gap-3 text-[11px] font-bold text-[#17211f]"><span><b className="text-[#0b8f80]">31</b> lịch hẹn</span><span><b className="text-[#0b8f80]">38.700đ</b> mỗi lịch</span></div>
-      </div>
-    ),
-  },
-  {
-    title: "Xem đối thủ đang chạy mẫu gì",
-    tag: "Không bị tụt lại",
-    tagBg: "#dcefea",
-    tagColor: "#0b8f80",
-    preview: (
-      <div className="flex flex-col gap-1.5">
-        {[["Đối thủ A", "Chạy 45 ngày"], ["Đối thủ B", "Chạy 30 ngày"], ["Đối thủ C", "Mẫu mới"]].map(([name, note]) => (
-          <div key={name} className="flex items-center gap-2 rounded-lg bg-[#f3f8f7] px-2 py-1.5">
-            <span className="size-5 shrink-0 rounded-full bg-[#e5eeec]" />
-            <span className="flex-1 truncate text-[11px] font-bold text-[#17211f]">{name}</span>
-            <span className="shrink-0 text-[10px] text-[#5c6b68]">{note}</span>
-          </div>
-        ))}
-      </div>
-    ),
-  },
 ];
 
 const reportItems = [
@@ -300,18 +168,8 @@ export default function AdsMcpPage() {
         <section id="tinh-nang" className="border-y border-[#2ee6c9]/10 bg-[#0a1a17]/70 py-20 sm:py-28">
           <Container>
             <SectionHeading tag="AI làm được gì" title="Mỗi việc AI làm," accent="đều để ra thêm khách" />
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {features.map(({ title, tag, tagBg, tagColor, preview }, i) => (
-                <Reveal key={title} delay={(i % 4) * 70}>
-                  <article className="flex h-full flex-col rounded-3xl border border-[#2ee6c9]/15 bg-[#0e2824]/70 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#2ee6c9]/35">
-                    <div className="flex min-h-[140px] flex-1 flex-col justify-center rounded-2xl bg-white p-3 shadow-sm">{preview}</div>
-                    <h3 className="mt-4 font-bold text-white">{title}</h3>
-                    <span className="mt-2 w-fit rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ background: tagBg, color: tagColor }}>{tag}</span>
-                  </article>
-                </Reveal>
-              ))}
-            </div>
-            <p className="mt-6 text-center text-xs text-[#6e918a]">Giao diện và số liệu minh hoạ</p>
+            <FeatureCards />
+            <p className="mt-3 text-center text-xs text-[#6e918a] sm:mt-6">Giao diện và số liệu minh hoạ</p>
           </Container>
         </section>
 
