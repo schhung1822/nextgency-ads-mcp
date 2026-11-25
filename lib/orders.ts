@@ -37,7 +37,7 @@ export type Order = {
   paypalOrderId?: string;
   paypalCaptureId?: string;
   payerEmail?: string;
-  // Đơn đăng ký tư vấn Ads MCP (trang /ads-mcp) — trống ("") ở đơn trang chủ.
+  // Đơn đăng ký tư vấn Ads MCP (trang /auto-ads-ai) — trống ("") ở đơn trang chủ.
   business?: string;
   adsRunner?: string;
   adBudget?: string;
@@ -50,7 +50,7 @@ export type Order = {
 
 export type NewOrder = Pick<Order, "code" | "name" | "phone" | "email" | "github" | "note" | "amount"> &
   Partial<Pick<Order, "currency" | "country" | "marketingOptIn" | "trackConsent" | "business" | "adsRunner" | "adBudget">> & {
-    /** "ads-mcp" = đơn đăng ký tư vấn ở /ads-mcp — ghi kèm business/adsRunner/adBudget (cần đã chạy `npm run db:migrate`). */
+    /** "ads-mcp" = đơn đăng ký tư vấn ở /auto-ads-ai — ghi kèm business/adsRunner/adBudget (cần đã chạy `npm run db:migrate`). */
     plan?: "default" | "ads-mcp";
   };
 
@@ -182,7 +182,7 @@ export async function createOrder(o: NewOrder): Promise<boolean> {
   const now = new Date();
   try {
     if (o.plan === "ads-mcp") {
-      // Đăng ký tư vấn Ads MCP (trang /ads-mcp): cần đã chạy `npm run db:migrate` để có cột business/ads_runner/ad_budget.
+      // Đăng ký tư vấn Ads MCP (trang /auto-ads-ai): cần đã chạy `npm run db:migrate` để có cột business/ads_runner/ad_budget.
       await db().execute(
         `INSERT INTO orders (code, status, name, phone, email, github, note, amount, business, ads_runner, ad_budget, consent_at, created_at)
          VALUES (?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

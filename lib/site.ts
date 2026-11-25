@@ -25,7 +25,7 @@ export const SITE = {
 } as const;
 
 /**
- * Gói "Phòng marketing AI" ở trang /ads-mcp — thuê theo tháng, khác sản phẩm/giá với SITE.price ở trang chủ.
+ * Gói "Phòng marketing AI" ở trang /auto-ads-ai — thuê theo tháng, khác sản phẩm/giá với SITE.price ở trang chủ.
  * Server luôn dùng giá này khi tạo đơn có plan "ads-mcp" (xem app/api/orders/route.ts) — client không gửi giá lên.
  */
 export const ADS_MCP = {

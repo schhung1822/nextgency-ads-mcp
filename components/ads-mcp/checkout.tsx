@@ -22,7 +22,7 @@ import { ADS_MCP, formatVnd, zaloHref } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /**
- * Form đăng ký + thanh toán cho trang /ads-mcp — nằm ngay trên trang (section #form), không phải popup, để
+ * Form đăng ký + thanh toán cho trang /auto-ads-ai — nằm ngay trên trang (section #form), không phải popup, để
  * khách thấy rõ và không bị che mất ngữ cảnh giá/ưu đãi phía trên. Dùng cùng cơ chế backend với trang chủ
  * (SePay QR, tạo đơn trên MySQL, tự xác nhận khi nhận được tiền) nhưng là một luồng riêng: giá khác
  * (ADS_MCP.price qua plan "ads-mcp"), không có bước GitHub, và sau khi thanh toán thì hẹn liên hệ qua Zalo
@@ -38,7 +38,7 @@ const POLL_MS = 4000;
 const POLL_MAX_MS = 30 * 60 * 1000;
 const ZALO_GROUP = "https://zalo.me/g/wjh3xkcip7phppc2lzdi";
 
-/** Nút "Đăng ký tư vấn" dùng khắp trang /ads-mcp — cuộn tới section #form thay vì mở popup. */
+/** Nút "Đăng ký tư vấn" dùng khắp trang /auto-ads-ai — cuộn tới section #form thay vì mở popup. */
 export function RegisterButton({
   children,
   light = false,

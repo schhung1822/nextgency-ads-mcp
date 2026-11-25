@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS orders (
   github             VARCHAR(60)  NOT NULL,
   note               TEXT         NULL,
 
-  -- chỉ dùng cho đăng ký tư vấn ở trang /ads-mcp (plan "ads-mcp"); NULL ở đơn trang chủ
+  -- chỉ dùng cho đăng ký tư vấn ở trang /auto-ads-ai (plan "ads-mcp"); NULL ở đơn trang chủ
   business           VARCHAR(40)  NULL COMMENT 'Lĩnh vực kinh doanh (slug, xem lib/order-schema.ts)',
   ads_runner         VARCHAR(40)  NULL COMMENT 'Hiện quảng cáo đang do ai chạy (slug)',
   ad_budget          VARCHAR(40)  NULL COMMENT 'Mức chi quảng cáo mỗi tháng (slug)',

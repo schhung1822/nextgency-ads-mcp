@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Chạy quảng cáo Facebook bằng AI | Nextgency",
   description: `Nhắn một câu, AI lên quảng cáo Facebook, tối ưu mỗi ngày và báo cáo mỗi sáng. Như có một team marketing giỏi bên cạnh. Chỉ ${formatVnd(ADS_MCP.price)}/tháng.`,
-  alternates: { canonical: "/ads-mcp" },
+  alternates: { canonical: "/auto-ads-ai" },
 };
 
 const eraRows = [
