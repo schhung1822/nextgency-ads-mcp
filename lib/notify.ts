@@ -22,6 +22,40 @@ function customerFields(order: Order): LarkField[] {
   ];
 }
 
+export type ConsultLead = {
+  /** Mã tham chiếu của lượt đăng ký (không phải mã đơn — chưa có đơn, chưa thanh toán). */
+  ref: string;
+  name: string;
+  phone: string;
+  email: string;
+  // Chữ hiển thị của các lựa chọn (không phải slug).
+  business: string;
+  adsRunner: string;
+  adBudget: string;
+};
+
+/**
+ * Khách vừa gửi form đăng ký tư vấn ở trang /auto-ads-ai (chưa thanh toán) — báo để đội ngũ liên hệ.
+ * Đây là nơi duy nhất nhận thông tin khách, nên bên gọi phải báo lỗi cho khách nếu gửi thất bại.
+ */
+export async function notifyConsult(lead: ConsultLead) {
+  return sendLarkCard({
+    title: "🔔 Đăng ký tư vấn mới — Auto Ads AI",
+    tone: "blue",
+    fields: [
+      { label: "Khách hàng", value: lead.name },
+      { label: "Số điện thoại / Zalo", value: lead.phone },
+      ...(lead.email ? [{ label: "Email", value: lead.email }] : []),
+      { label: "Lĩnh vực", value: lead.business },
+      { label: "Quảng cáo đang do ai chạy", value: lead.adsRunner },
+      { label: "Tiền quảng cáo mỗi tháng", value: lead.adBudget },
+      { label: "Thời gian đăng ký", value: vnTime(new Date().toISOString()) },
+      { label: "Mã đăng ký", value: lead.ref },
+    ],
+    footer: `Khách đăng ký tư vấn ở trang /auto-ads-ai, CHƯA thanh toán. Việc cần làm: liên hệ khách qua Zalo/điện thoại (${lead.phone}) trong 24 giờ để tư vấn.`,
+  });
+}
+
 export type PaidTx = {
   id: string | number;
   amount: number;

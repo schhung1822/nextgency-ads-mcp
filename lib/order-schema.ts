@@ -29,16 +29,20 @@ const businessValues = BUSINESS_OPTIONS.map((o) => o.value) as [string, ...strin
 const adsRunnerValues = ADS_RUNNER_OPTIONS.map((o) => o.value) as [string, ...string[]];
 const adBudgetValues = AD_BUDGET_OPTIONS.map((o) => o.value) as [string, ...string[]];
 
+// Họ tên và số điện thoại — dùng chung cho form đặt hàng và form đăng ký tư vấn (lib/consult-schema.ts).
+export const nameField = z.string().trim().min(2, "Vui lòng nhập họ tên").max(80, "Họ tên quá dài");
+export const phoneField = z
+  .string()
+  .trim()
+  .transform((v) => v.replace(/[\s.\-()]/g, ""))
+  // Số Việt Nam (0… / 84… / +84…) hoặc số quốc tế dạng +mã nước (khách từ trang /en). Tối đa 16 ký tự, vừa cột VARCHAR(20).
+  .pipe(z.string().regex(/^(?:(?:\+?84|0)\d{9}|\+[1-9]\d{7,14})$/, "Số điện thoại chưa đúng (VD: 0901234567, số nước ngoài dạng +65…)"));
+
 // Dùng chung cho form (client) và API (server).
 export const orderInputSchema = z
   .object({
-    name: z.string().trim().min(2, "Vui lòng nhập họ tên").max(80, "Họ tên quá dài"),
-    phone: z
-      .string()
-      .trim()
-      .transform((v) => v.replace(/[\s.\-()]/g, ""))
-      // Số Việt Nam (0… / 84… / +84…) hoặc số quốc tế dạng +mã nước (khách từ trang /en). Tối đa 16 ký tự, vừa cột VARCHAR(20).
-      .pipe(z.string().regex(/^(?:(?:\+?84|0)\d{9}|\+[1-9]\d{7,14})$/, "Số điện thoại chưa đúng (VD: 0901234567, số nước ngoài dạng +65…)")),
+    name: nameField,
+    phone: phoneField,
     // Bắt buộc ở trang chủ (plan "default"); không bắt buộc ở đăng ký tư vấn Ads MCP (plan "ads-mcp") —
     // kiểm tra cụ thể ở superRefine bên dưới. Có nhập thì luôn phải đúng định dạng.
     email: z.string().trim().toLowerCase().max(120).optional().default(""),

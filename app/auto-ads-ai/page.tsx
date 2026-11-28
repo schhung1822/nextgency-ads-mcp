@@ -20,7 +20,7 @@ import CountUp from "@/components/react-bits/CountUp";
 import { Reveal } from "@/components/landing/reveal";
 import { AdsHeroAurora, AdsHeroTitle, AdsSectionTitle, AdsShinyBadge } from "@/components/ads-mcp/effects";
 import { ChatGptMark, ClaudeMark, FacebookMark, GoogleDriveMark, InstagramMark, MessengerMark, TelegramMark } from "@/components/ads-mcp/brand-icons";
-import { RegisterButton as ContactButton, RegistrationCard } from "@/components/ads-mcp/checkout";
+import { RegisterButton as ContactButton, RegistrationCard } from "@/components/ads-mcp/consult-form";
 import { WorkflowDemo } from "@/components/ads-mcp/workflow-demo";
 import { FeatureCards } from "@/components/ads-mcp/feature-cards";
 import { FunnelChart } from "@/components/ads-mcp/funnel-chart";
@@ -110,7 +110,7 @@ export default function AdsMcpPage() {
                 <AdsHeroTitle />
                 <p className="mt-4 max-w-xl text-base leading-relaxed text-[#96b8b1] sm:text-lg">Như có một team marketing giỏi ngồi cạnh. Bạn chỉ nhìn kết quả: ra bao nhiêu khách, có lời không.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <ContactButton glow>Đăng ký ngay</ContactButton>
+                  <ContactButton glow>Đăng ký tư vấn</ContactButton>
                 </div>
                 <p className="mt-4 text-sm text-[#6e918a]">Chỉ <b className="font-bold text-[#2ee6c9]">{formatVnd(ADS_MCP.price)}/tháng</b> · chưa gồm tiền chạy quảng cáo</p>
               </Reveal>
@@ -254,19 +254,19 @@ export default function AdsMcpPage() {
         </section>
 
         <section id="bang-gia" className="py-20 sm:py-28">
-          <Container><SectionHeading tag="Chi phí" title="Thuê phòng Marketing Ads AI tối ưu" accent={`chỉ ${formatVnd(ADS_MCP.price)}/tháng`} /><Reveal><article className="mx-auto max-w-xl rounded-[2rem] border-2 border-[#2ee6c9]/45 bg-[radial-gradient(ellipse_at_50%_0%,rgba(46,230,201,.22),transparent_52%)] bg-[#0e2824] p-7 text-center shadow-2xl shadow-black/25 transition-transform duration-300 hover:-translate-y-1 sm:p-9"><span className="rounded-full bg-[#2ee6c9] px-3 py-1.5 text-xs font-black tracking-wider text-[#06110f]">QUẢNG CÁO FACEBOOK BẰNG AI</span><p className="mt-5 text-5xl font-black tracking-tight text-[#2ee6c9] sm:text-6xl">{formatVnd(ADS_MCP.price)}</p><p className="mt-1 font-semibold text-[#e8f4f1]">mỗi tháng</p><p className="mt-1 text-sm text-[#96b8b1]">Chưa gồm tiền chạy quảng cáo</p><ul className="my-7 grid gap-3 text-left text-sm text-[#e8f4f1]">{["Lên quảng cáo từ bài, ảnh, video, livestream", "Lời chào tin nhắn soạn sẵn", "AI tự kiểm tra quảng cáo trong ngày, đề xuất tối ưu", "Chỉ ra video nào hiệu quả, nên làm thêm dòng video gì", "Báo cáo 8h sáng: chi phí, khách, lịch hẹn", "Tài khoản đứng tên bạn, bạn duyệt mới chạy"].map(item => <li key={item} className="flex gap-2"><CircleCheckBigIcon className="size-5 shrink-0 text-[#2ee6c9]" />{item}</li>)}</ul><ContactButton glow className="w-full">Đăng ký và thanh toán</ContactButton></article></Reveal></Container>
+          <Container><SectionHeading tag="Chi phí" title="Thuê phòng Marketing Ads AI tối ưu" accent={`chỉ ${formatVnd(ADS_MCP.price)}/tháng`} /><Reveal><article className="mx-auto max-w-xl rounded-[2rem] border-2 border-[#2ee6c9]/45 bg-[radial-gradient(ellipse_at_50%_0%,rgba(46,230,201,.22),transparent_52%)] bg-[#0e2824] p-7 text-center shadow-2xl shadow-black/25 transition-transform duration-300 hover:-translate-y-1 sm:p-9"><span className="rounded-full bg-[#2ee6c9] px-3 py-1.5 text-xs font-black tracking-wider text-[#06110f]">QUẢNG CÁO FACEBOOK BẰNG AI</span><p className="mt-5 text-5xl font-black tracking-tight text-[#2ee6c9] sm:text-6xl">{formatVnd(ADS_MCP.price)}</p><p className="mt-1 font-semibold text-[#e8f4f1]">mỗi tháng</p><p className="mt-1 text-sm text-[#96b8b1]">Chưa gồm tiền chạy quảng cáo</p><ul className="my-7 grid gap-3 text-left text-sm text-[#e8f4f1]">{["Lên quảng cáo từ bài, ảnh, video, livestream", "Lời chào tin nhắn soạn sẵn", "AI tự kiểm tra quảng cáo trong ngày, đề xuất tối ưu", "Chỉ ra video nào hiệu quả, nên làm thêm dòng video gì", "Báo cáo 8h sáng: chi phí, khách, lịch hẹn", "Tài khoản đứng tên bạn, bạn duyệt mới chạy"].map(item => <li key={item} className="flex gap-2"><CircleCheckBigIcon className="size-5 shrink-0 text-[#2ee6c9]" />{item}</li>)}</ul><ContactButton glow className="w-full">Đăng ký tư vấn</ContactButton></article></Reveal></Container>
         </section>
 
         <section id="form" className="py-20 sm:py-28">
           <Container>
-            <SectionHeading tag="Đăng ký" title="Thuê phòng Marketing" accent="Ads AI tối ưu" lead="Điền thông tin, thanh toán qua mã QR. Nextgency gọi xếp lịch cài đặt trong 24 giờ." />
+            <SectionHeading tag="Đăng ký tư vấn" title="Thuê phòng Marketing" accent="Ads AI tối ưu" lead="Để lại thông tin, Nextgency liên hệ tư vấn cho bạn trong 24 giờ. Chưa cần thanh toán." />
             <Reveal><RegistrationCard /></Reveal>
           </Container>
         </section>
 
         <section id="faq" className="border-y border-[#2ee6c9]/10 bg-[#0a1a17]/70 py-20 sm:py-28"><Container><SectionHeading tag="Câu hỏi thường gặp" title="Bạn đang" accent="thắc mắc?" /><div className="mx-auto grid max-w-3xl gap-3">{faqs.map(([q, a]) => <Reveal key={q}><details className="group rounded-2xl border border-[#2ee6c9]/15 bg-[#0e2824]/70 transition-colors duration-300 open:border-[#2ee6c9]/40 hover:border-[#2ee6c9]/30"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-bold text-white"><span>{q}</span><ChevronDownIcon className="size-5 shrink-0 text-[#2ee6c9] transition-transform group-open:rotate-180" /></summary><p className="border-t border-[#2ee6c9]/10 px-5 py-4 text-sm leading-relaxed text-[#96b8b1]">{a}</p></details></Reveal>)}</div></Container></section>
 
-        <section className="py-20 sm:py-28"><Container><Reveal><div className="overflow-hidden rounded-[2rem] border border-[#2ee6c9]/20 bg-[radial-gradient(circle_at_72%_0%,rgba(46,230,201,.22),transparent_34%),linear-gradient(135deg,#0e2420,#0b8f80)] px-6 py-12 text-center sm:px-10 sm:py-16"><h2 className="mx-auto max-w-3xl text-3xl font-bold tracking-tight text-white sm:text-4xl">2027 rồi, <span className="text-[#2ee6c9]">ra lệnh cho AI chạy quảng cáo thôi</span></h2><p className="mx-auto mt-4 max-w-xl text-[#d2ebe5]">Chỉ {formatVnd(ADS_MCP.price)}/tháng, chưa gồm tiền chạy quảng cáo.</p><ContactButton glow className="mt-7">Đăng ký ngay</ContactButton></div></Reveal></Container></section>
+        <section className="py-20 sm:py-28"><Container><Reveal><div className="overflow-hidden rounded-[2rem] border border-[#2ee6c9]/20 bg-[radial-gradient(circle_at_72%_0%,rgba(46,230,201,.22),transparent_34%),linear-gradient(135deg,#0e2420,#0b8f80)] px-6 py-12 text-center sm:px-10 sm:py-16"><h2 className="mx-auto max-w-3xl text-3xl font-bold tracking-tight text-white sm:text-4xl">2027 rồi, <span className="text-[#2ee6c9]">ra lệnh cho AI chạy quảng cáo thôi</span></h2><p className="mx-auto mt-4 max-w-xl text-[#d2ebe5]">Chỉ {formatVnd(ADS_MCP.price)}/tháng, chưa gồm tiền chạy quảng cáo.</p><ContactButton glow className="mt-7">Đăng ký tư vấn</ContactButton></div></Reveal></Container></section>
       </main>
 
       <footer className="relative z-10 border-t border-white/8 bg-[#040c0b] py-12 text-[#96b8b1]">
@@ -299,7 +299,7 @@ export default function AdsMcpPage() {
           <b className="block font-bold text-white">{formatVnd(ADS_MCP.price)}/tháng</b>
           <span className="text-[#6e918a]">chưa gồm tiền chạy quảng cáo</span>
         </div>
-        <ContactButton className="h-11 shrink-0 px-5 text-sm">Đăng ký ngay</ContactButton>
+        <ContactButton className="h-11 shrink-0 px-5 text-sm">Đăng ký tư vấn</ContactButton>
       </div>
     </div>
   );

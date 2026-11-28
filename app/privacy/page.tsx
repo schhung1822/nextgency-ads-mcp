@@ -59,7 +59,7 @@ export default function PrivacyPage() {
           <li><b>SePay và ngân hàng:</b> tạo mã QR, ghi nhận và đối soát thanh toán.</li>
           <li><b>Vercel:</b> hạ tầng lưu trữ và vận hành website.</li>
           <li><b>Upstash:</b> cơ sở dữ liệu lưu thông tin đơn hàng.</li>
-          <li><b>Lark:</b> nhận thông báo nội bộ về đơn đã thanh toán (gồm thông tin đặt hàng của bạn) để đội ngũ xử lý.</li>
+          <li><b>Lark:</b> nhận thông báo nội bộ về đăng ký tư vấn và đơn đã thanh toán (gồm thông tin bạn điền trong biểu mẫu) để đội ngũ xử lý.</li>
           <li><b>GitHub:</b> tên tài khoản của bạn được dùng để mời vào repo.</li>
           <li><b>Google và Meta:</b> nhận dữ liệu đo lường nêu tại mục 5.</li>
           <li>Đối tác tư vấn, kiểm toán, pháp lý hoặc cơ quan nhà nước khi có căn cứ hợp pháp.</li>

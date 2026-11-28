@@ -13,6 +13,10 @@ Next.js 16 (App Router) + shadcn/ui (base-nova) + Tailwind 4. Trang Việt Nam t
 
 Giá lấy từ server ([lib/site.ts](lib/site.ts) → `SITE.price` = 1.999.000₫), client không gửi giá.
 
+### Trang `/auto-ads-ai` (đăng ký tư vấn, không thanh toán)
+
+Khách điền form → `POST /api/consult` → server gửi thẻ **Lark** "Đăng ký tư vấn mới" để đội ngũ liên hệ. Không tạo đơn, không lưu MySQL, không cần SePay. Lark là nơi duy nhất nhận thông tin khách: thiếu `LARK_WEBHOOK_URL` hoặc Lark báo lỗi (sau 1 lần thử lại) thì khách thấy thông báo lỗi và được mời gửi lại, không báo "đã nhận" suông.
+
 ## Cấu hình
 
 Sao chép `.env.example` → `.env.local` (local) hoặc nhập vào Vercel → Settings → Environment Variables.

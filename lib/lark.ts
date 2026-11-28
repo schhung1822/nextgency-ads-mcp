@@ -53,6 +53,8 @@ export async function sendLarkCard(opts: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       cache: "no-store",
+      // Không để Lark treo làm khách chờ mãi ở form đăng ký tư vấn (hết giờ = coi như gửi lỗi).
+      signal: AbortSignal.timeout(8000),
     });
     const json = (await res.json().catch(() => ({}))) as { code?: number; StatusCode?: number; msg?: string };
     const code = json.code ?? json.StatusCode ?? 0;
